@@ -6,6 +6,7 @@
     <StartProgram>dotnet</StartProgram>
     <StartArguments>$(MSBuildThisFileDirectory)bin\html</StartArguments>
     <StartWorkingDirectory>$(MSBuildThisFileDirectory)bin\html</StartWorkingDirectory>
+    <ProjectRootDir>$(MSBuildThisFileDirectory)src</ProjectRootDir>
   </PropertyGroup>
   
   <ItemGroup>
@@ -16,6 +17,10 @@
     <None Include="package.json" />
     <None Include="esbuild.config.mjs" />
     <None Include="wsconfig.json" />
+
+    <Compile Include="src\JsonValidator.fs" />
+    <Compile Include="src\JsonTraverser.fs" />
+    <Compile Include="src\JsonComparator.fs" />
   </ItemGroup>
 
   <ItemGroup>

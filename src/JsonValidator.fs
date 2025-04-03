@@ -1,5 +1,5 @@
-﻿module JsonToolboxWebApp.JsonValidator
-
+﻿
+module JsonToolboxWebApp.JsonValidator
 
 
 open System
