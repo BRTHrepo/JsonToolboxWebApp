@@ -1,0 +1,35 @@
+import Object from "./System.Object"
+export default class StringBuilder extends Object {
+  lines:string[];
+  currentLine:string;
+  toString():string
+  AppendLine(part:string):StringBuilder
+  AppendLine_1(part:number):StringBuilder
+  AppendLine_2(part:number):StringBuilder
+  AppendLine_3(part):StringBuilder
+  AppendLine_4(part:boolean):StringBuilder
+  AppendLine_5(part:number):StringBuilder
+  AppendLine_6(part:number):StringBuilder
+  AppendLine_7(part:BigInt):StringBuilder
+  AppendLine_8(part:number):StringBuilder
+  AppendLine_9(part:number):StringBuilder
+  AppendLine_10(part:number):StringBuilder
+  AppendLine_11(part:BigInt):StringBuilder
+  AppendLine_12(part:number):StringBuilder
+  AppendLine_13(part:string):StringBuilder
+  Append(part:string):StringBuilder
+  Append_1(part:boolean):StringBuilder
+  Append_2(part):StringBuilder
+  Append_3(part:number):StringBuilder
+  Append_4(part:number):StringBuilder
+  Append_5(part:number):StringBuilder
+  Append_6(part:number):StringBuilder
+  Append_7(part:BigInt):StringBuilder
+  Append_8(part:number):StringBuilder
+  Append_9(part:number):StringBuilder
+  Append_10(part:number):StringBuilder
+  Append_11(part:BigInt):StringBuilder
+  Append_12(part:number):StringBuilder
+  Append_13(part:string):StringBuilder
+  constructor()
+}
