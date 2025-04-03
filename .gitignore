@@ -1,0 +1,95 @@
+# Általános F# build fájlok
+*.fsx
+*.fsi
+
+
+# .NET build fájlok
+bin/
+obj/
+*.exe
+*.dll
+*.pdb
+*.cache
+*.ilk
+*.log
+*.userprefs
+*.rsuser
+*.suo
+*.user
+*.vscode/
+
+# Rider (IDEA) specifikus
+.idea/
+*.iml
+out/
+*.ipr
+*.iws
+# Rider/IDEA workspace és cache
+workspace.xml
+tasks.xml
+
+# Visual Studio specifikus
+*.vs/
+*.csproj.user
+*.dbmdl
+*.jfm
+.DS_Store
+.vscode/
+*.aps
+*.bak
+*.ncb
+*.opendb
+*.sdf
+*.ttf
+*.tlog
+*.vsp
+*.vspscc
+*.vssscc
+# Visual Studio Code specifikus
+*.code-workspace
+
+# NuGet és .NET Restore által generált fájlok
+*.nupkg
+project.lock.json
+project.assets.json
+packages/
+.nuget/
+*.deps.json
+*.runtimeconfig.json
+
+
+# Temporary és log fájlok
+*.tmp
+*.temp
+*.swp
+
+# ReSharper cache és beállítások
+_ReSharper.*
+resharper.xml
+*.DotSettings.user
+
+
+
+
+
+
+# Coverage fájlok
+*.coverage
+*.coveragexml
+.coverage/
+*.lcov
+
+# Test eredmények
+TestResults/
+*.trx
+*.out
+
+# Docker
+**/[Dd]ockerfile
+**/[Dd]ocker-compose*
+**/docker-compose*
+
+# Yarn / npm
+node_modules/
+yarn.lock
+package-lock.json
