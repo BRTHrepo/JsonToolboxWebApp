@@ -3,6 +3,7 @@ namespace JsonToolboxWebApp
 open WebSharper
 open WebSharper.Sitelets
 open WebSharper.UI
+open WebSharper.UI.Client
 open WebSharper.UI.Server
 
 type EndPoint =
