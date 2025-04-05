@@ -55,7 +55,7 @@ module Site =
     let AboutPage ctx =
         let contentHtml = readAndParseMarkdown ()
         Templating.Main ctx EndPoint.About "About" [
-            h1 [] [text "About"]
+            //h1 [] [text "About"]
             Doc.Verbatim contentHtml // Nyers HTML beillesztése biztonságosan
         ]
 
