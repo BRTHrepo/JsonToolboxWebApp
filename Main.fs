@@ -3,9 +3,9 @@ namespace JsonToolboxWebApp
 open WebSharper
 open WebSharper.Sitelets
 open WebSharper.UI
-open WebSharper.UI.Client
+open FSharp.Formatting.Markdown
 open WebSharper.UI.Server
-
+open System.IO
 type EndPoint =
     | [<EndPoint "GET /">] Home
     | [<EndPoint "GET /about">] About
@@ -38,7 +38,14 @@ module Site =
     open WebSharper.UI.Html
 
     open type WebSharper.UI.ClientServer
-
+    let readAndParseMarkdown () =
+        let filePath = Path.Combine(__SOURCE_DIRECTORY__, "README.md")
+        if File.Exists(filePath) then
+            let markdownContent = File.ReadAllText(filePath)
+            let parsedMarkdown = Markdown.Parse(markdownContent)
+            Markdown.ToHtml(markdownContent) // A markdown szöveg HTML-re alakítása
+        else
+            "<p>README.md file not found.</p>"
     let HomePage ctx =
         Templating.Main ctx EndPoint.Home "Home" [
             h1 [] [text "Say Hi to JavaScript!"]
@@ -46,9 +53,10 @@ module Site =
         ]
 
     let AboutPage ctx =
+        let contentHtml = readAndParseMarkdown ()
         Templating.Main ctx EndPoint.About "About" [
             h1 [] [text "About"]
-            p [] [text "This is a template WebSharper generated html application."]
+            Doc.Verbatim contentHtml // Nyers HTML beillesztése biztonságosan
         ]
 
     [<Website>]
