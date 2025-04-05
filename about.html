@@ -8,14 +8,12 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <style>
-        /* Sticky footer styles */
         html {
             position: relative;
             min-height: 100%;
         }
 
         body {
-            /* Margin bottom by footer height */
             margin-bottom: 60px;
         }
 
@@ -23,7 +21,6 @@
             position: absolute;
             bottom: 0;
             width: 100%;
-            /* Set the fixed height of the footer here */
             height: 60px;
             background-color: #f5f5f5;
         }
@@ -34,42 +31,89 @@
     </style>
 </head>
 <body>
-    
-    <nav class="navbar navbar-default navbar-static-top">
-        <div class="container">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <a class="navbar-brand" href="#">Your App</a>
-            </div>
-            <div id="navbar" class="navbar-collapse collapse">
-                <ul class="nav navbar-nav"><li><a href="./index.html">Home</a></li><li class="active"><a href="./about.html">About</a></li></ul>
-                <ul class="nav navbar-nav navbar-right">
-                    <li><a href="https://websharper.com">websharper.com</a></li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+<nav class="navbar navbar-default navbar-static-top">
     <div class="container">
-        <h1>About</h1><p>This is a template WebSharper generated html application.</p>
-    </div>
-    <footer class="footer">
-        <div class="container">
-            <p class="text-muted">
-                For an enhanced template that provides automatic GitHub deployment to Azure, fork from <a href="https://github.com/intellifactory/ClientServer.Azure">GitHub</a>, or
-                read more <a href="https://websharper.com/blog-entry/4368/deploying-websharper-apps-to-azure-via-github">here</a>.
-            </p>
+        <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav"><li><a href="./index.html">Home</a></li><li class="active"><a href="./about.html">About</a></li></ul>
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="https://websharper.com">websharper.com</a></li>
+            </ul>
         </div>
-    </footer>
-    
+    </div>
+</nav>
+<div class="container">
+    <h1>About</h1><p>This is a template WebSharper generated html application.</p>
+</div>
+<footer class="footer">
+    <div class="container">
+        <p class="text-muted">
+            For an enhanced template that provides automatic GitHub deployment to Azure, fork from
+            <a href="https://github.com/intellifactory/ClientServer.Azure">GitHub</a>, or read more
+            <a href="https://websharper.com/blog-entry/4368/deploying-websharper-apps-to-azure-via-github">here</a>.
+        </p>
+    </div>
+</footer>
+
+
+<script defer="">
+    function readFile(file) {
+        return new Promise((resolve, reject) => {
+            console.log("1 readFile function called with file:", file);
+            if (!file || !(file instanceof File)) {
+                console.error("Invalid file object");
+                reject("Invalid file object.");
+                return;
+            }
+            console.log("1 File selected:", file.name);
+            const reader = new FileReader();
+            reader.onload = function () {
+                console.log("1 File successfully read. Length:", reader.result.length);
+                resolve(reader.result); // A fájl tartalmának visszaadása
+            };
+
+            reader.onerror = function (event) {
+                console.error("Error reading the file:", event.target.error);
+                reject(`Error reading the file: ${event.target.error.name}`);
+            };
+            reader.readAsText(file); // A fájl tartalmának beolvasása szövegként
+            console.log("File reading started.");
+        });
+    }
+
+
+    window.readFileFromInput = readFile;
+
+</script>
+
+
+
+
 <div style="display:none" ws-children-template="MainForm"><div>
-                <input ws-var="TextToReverse" />
-                <button ws-onclick="OnSend">Send</button>
-                <hr />
-                <h4 class="text-muted">Client calculated response:</h4>
-                <div class="jumbotron"><h1>${Reversed}</h1></div>
-            </div></div></body>
+            
+            <input ws-var="TextToReverse" />
+            <button ws-onclick="OnSend">Check the jsons</button>
+            <hr />
+            <h4 class="text-muted">Client calculated response:</h4>
+            <div class="jumbotron" style="max-height: 2em; overflow-y: auto; border: 1px solid #ccc; padding: 5px;">${Reversed}</div>
+
+            
+            <h2>Select a JSON File</h2>
+            <input type="file" id="fileInput" accept=".json" />
+            <hr />
+
+            
+            <h3>Select Target:</h3>
+            <label for="jsonTarget"></label><select id="jsonTarget">
+                <option value="json1">JSON 1</option>
+                <option value="json2">JSON 2</option>
+            </select>
+            <hr />
+
+            
+            <h3>JSON Content 1:</h3>
+            <pre id="jsonOutput1" style="max-height: 10em; overflow-y: auto; border: 1px solid #ccc; padding: 5px;"></pre>
+
+            <h3>JSON Content 2:</h3>
+            <pre id="jsonOutput2" style="max-height: 10em; overflow-y: auto; border: 1px solid #ccc; padding: 5px;"></pre>
+        </div></div></body>
 </html>
