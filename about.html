@@ -286,12 +286,12 @@ Allows filtering of comparison results based on the <code>same</code> property:
 
 <div style="display:none" ws-children-template="MainForm"><div>
             
-            <h2>Select a JSON File</h2>
+            <h4>Select a JSON File</h4>
             <input type="file" id="fileInput" accept=".json" />
             <hr />
 
             
-            <h3>Select Target:</h3>
+            <h4>Select Target:</h4>
             <label for="jsonTarget">Choose target:</label>
             <select id="jsonTarget" class="form-control">
                 <option value="json1">JSON 1</option>
@@ -300,15 +300,15 @@ Allows filtering of comparison results based on the <code>same</code> property:
             <hr />
 
             
-            <h3>JSON Content 1:</h3>
+            <h4>JSON Content 1:</h4>
             <pre id="jsonOutput1"></pre>
 
-            <h3>JSON Content 2:</h3>
+            <h4>JSON Content 2:</h4>
             <pre id="jsonOutput2"></pre>
 
             
             <h4 class="text-muted">response:</h4>
-            <div class="jumbotron">
+            <div class="jumbotron" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-height: 2em; border: 1px solid #ccc; padding: 5px;">
                 ${Reversed}
             </div>
 
