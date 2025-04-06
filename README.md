@@ -4,6 +4,20 @@
 
 JsonToolboxWebApp is a web application designed to process, validate, and compare JSON files. Built with F# and WebSharper, the application provides a user-friendly interface for JSON analysis.
 
+## Screenshots
+
+### 1. Select File
+![Select File](images/selectFile.png)
+
+### 2. Select Target
+![Select Target](images/target.png)
+
+### 3. Select Filter
+![Select Filter](images/filter.png)
+
+### 4. Result Section
+![Result Section](images/result.png)
+
 ## Motivation
 
 The JsonToolboxWebApp was created to facilitate the comparison of JSON files and identify differences between them. The application serves as a foundation for further development, with potential features such as JSON editing, merging, and exporting comparison results for broader use cases.
