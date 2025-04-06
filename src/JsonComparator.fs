@@ -19,7 +19,7 @@ module JsonComparator =
     type UnionDictionary = Map<string, ComparisonResult>
 
     // Function to compare two JsonValue instances
-    let rec compareJsonValues (path: string) (value1: JsonValue) (value2: JsonValue) : (string * ComparisonResult) list =
+    let rec compareJsonValues1 (path: string) (value1: JsonValue) (value2: JsonValue) : (string * ComparisonResult) list =
         match (value1, value2) with
         | (Object obj1, Object obj2) ->
             let allKeys = 
@@ -32,9 +32,9 @@ module JsonComparator =
                 let value1 = obj1.TryFind key
                 let value2 = obj2.TryFind key
                 match (value1, value2) with
-                | (Some v1, Some v2) -> compareJsonValues newPath v1 v2
-                | (Some v1, None) -> compareJsonValues newPath v1 Null
-                | (None, Some v2) -> compareJsonValues newPath Null v2
+                | (Some v1, Some v2) -> compareJsonValues1 newPath v1 v2
+                | (Some v1, None) -> compareJsonValues1 newPath v1 Null
+                | (None, Some v2) -> compareJsonValues1 newPath Null v2
                 | _ -> [])
             |> Seq.toList
             |> (fun results ->
@@ -50,15 +50,52 @@ module JsonComparator =
                 let value1 = List.tryItem i arr1
                 let value2 = List.tryItem i arr2
                 match (value1, value2) with
-                | (Some v1, Some v2) -> compareJsonValues $"{path}[{i}]" v1 v2
-                | (Some v1, None) -> compareJsonValues $"{path}[{i}]" v1 Null
-                | (None, Some v2) -> compareJsonValues $"{path}[{i}]" Null v2
+                | (Some v1, Some v2) -> compareJsonValues1 $"{path}[{i}]" v1 v2
+                | (Some v1, None) -> compareJsonValues1 $"{path}[{i}]" v1 Null
+                | (None, Some v2) -> compareJsonValues1 $"{path}[{i}]" Null v2
                 | _ -> [])
             |> (fun results ->
                 if List.forall (fun (_, result) -> result.same) results then
                     [(path, { same = true; json1Value = value1; json2Value = value2 })]
                 else
                     results)
+
+        | _ ->
+            if value1 <> value2 then
+                [(path, { same = false; json1Value = value1; json2Value = value2 })]
+            else
+                [(path, { same = true; json1Value = value1; json2Value = value2 })]
+    let rec compareJsonValues (path: string) (value1: JsonValue) (value2: JsonValue) : (string * ComparisonResult) list =
+        match value1, value2 with
+        | Null, Null ->
+            [(path, { same = true; json1Value = Null; json2Value = Null })]
+
+        | Null, _ ->
+            [(path, { same = false; json1Value = Null; json2Value = value2 })]
+
+        | _, Null ->
+            [(path, { same = false; json1Value = value1; json2Value = Null })]
+
+        | Object obj1, Object obj2 ->
+            let allKeys = 
+                Set.union (obj1 |> Map.toSeq |> Seq.map fst |> Set.ofSeq) 
+                          (obj2 |> Map.toSeq |> Seq.map fst |> Set.ofSeq)
+
+            allKeys
+            |> Seq.collect (fun key ->
+                let newPath = path + "." + key
+                let value1 = obj1.TryFind key |> Option.defaultValue Null
+                let value2 = obj2.TryFind key |> Option.defaultValue Null
+                compareJsonValues newPath value1 value2)
+            |> Seq.toList
+
+        | Array arr1, Array arr2 ->
+            let maxLength = max arr1.Length arr2.Length
+            [0 .. maxLength - 1]
+            |> List.collect (fun i ->
+                let value1 = List.tryItem i arr1 |> Option.defaultValue Null
+                let value2 = List.tryItem i arr2 |> Option.defaultValue Null
+                compareJsonValues $"{path}[{i}]" value1 value2)
 
         | _ ->
             if value1 <> value2 then

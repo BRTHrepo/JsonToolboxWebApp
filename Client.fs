@@ -18,6 +18,7 @@ module Client =
     let outputDiv1 = JS.Document.GetElementById("jsonOutput1")
     let outputDiv2 = JS.Document.GetElementById("jsonOutput2")
     let comparisonResultDiv = JS.Document.GetElementById("comparisonResult")
+    let filterSelect = JS.Document.GetElementById("filterSame") :?> HTMLSelectElement
     let CompareJsons jsonString1 jsonString2 =
         try
             // JSON stringek feldolgozása JsonValue típusra
@@ -40,6 +41,13 @@ module Client =
         | _ -> 
             // Ha a bemenet nem 1 vagy 2, akkor null-t ad vissza
             null
+    
+    let filterResultsBySame (results: Map<string, ComparisonResult>) (filter: string) : Map<string, ComparisonResult> =
+        match filter with
+        | "true" -> results |> Map.filter (fun _ v -> v.same) // Csak azonosak
+        | "false" -> results |> Map.filter (fun _ v -> not v.same) // Csak eltérők
+        | _ -> results // Mindkettőt visszaadja ("all")
+
     let formatComparisonResult (dictionary: Map<string, ComparisonResult>) : string =
         dictionary
         |> Map.fold (fun acc key value ->
@@ -64,8 +72,12 @@ module Client =
             if not (isNull json1Content) && not (isNull json2Content) && not (json1Content.Length = 0) && not (json2Content.Length = 0) then
                 let result = CompareJsons json1Content json2Content
                 Console.Log("Comparison completed.", result)
+                
+                let selectedFilter = filterSelect?value
+                            // Szűrt eredmények előállítása
+                let filteredResult = filterResultsBySame result selectedFilter
                 // Formázott eredmény előállítása
-                let formattedResult = formatComparisonResult result
+                let formattedResult = formatComparisonResult filteredResult
                 // Eredmény frissítése a HTML-ben
                 updateHtmlWithFormattedResult formattedResult
             else
@@ -106,11 +118,13 @@ module Client =
         let updateReversed newValue =
             // Az rvReversed értékének frissítése
             rvReversed := newValue
+            
         // Eseménykezelés inicializálása a fájlválasztóhoz
         JS.Window.OnLoad <-
             fun _ ->
                 let fileInput = JS.Document.GetElementById(inputId)
-
+                if not (isNull filterSelect) then
+                     filterSelect.OnChange <- fun _ -> checkAllJsons ()
                 if fileInput <> null then
                     fileInput?onchange <-
                         fun _ ->
