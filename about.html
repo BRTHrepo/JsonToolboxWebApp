@@ -43,11 +43,134 @@
 </nav>
 <div class="container">
     <h1>JsonToolboxWebApp</h1>
-<h2>Description</h2>
-<p><strong>jsonToolboxWeb</strong> is a web application designed to assist in processing and comparing JSON files. The application provides the following features:
-- <strong>JSON Traverser</strong>: Navigate through JSON structures.
-- <strong>JSON Validator</strong>: Check the validity of JSON files.
-- <strong>JSON Comparator</strong>: Compare two JSON files and display the differences.</p>
+<h2>Project Overview</h2>
+<p>JsonToolboxWebApp is a web application designed to process, validate,
+and compare JSON files.
+Built with F# and WebSharper, the application provides a user-friendly interface for JSON analysis.</p>
+<hr />
+<h2>Features</h2>
+<h3>1. JSON Traverser</h3>
+<ul>
+<li>Recursively navigates through JSON structures.</li>
+<li>Handles nested objects and arrays efficiently.</li>
+</ul>
+<h3>2. JSON Validator</h3>
+<ul>
+<li>Validates the syntax and structure of JSON files.</li>
+<li>Provides meaningful error messages for invalid JSON inputs.</li>
+</ul>
+<h3>3. JSON Comparator</h3>
+<ul>
+<li>Compares two JSON files recursively.</li>
+<li>Identifies differences in keys, values, and array sizes.</li>
+<li>Outputs discrepancies in a structured format (<code>UnionDictionary</code>).</li>
+</ul>
+<h3>4. Customizable Output</h3>
+<ul>
+<li>
+Allows filtering of comparison results based on the <code>same</code> property:
+<ul>
+<li>Show all results.</li>
+<li>Show only identical entries (<code>same = true</code>).</li>
+<li>Show only differing entries (<code>same = false</code>).</li>
+</ul>
+</li>
+<li>Dynamically updates the output when the filter changes.</li>
+</ul>
+<h3>5. JavaScript Object Null Handling</h3>
+<ul>
+<li>Ensures that <code>null</code> values are not misclassified as objects during traversal.</li>
+<li>Added explicit checks to correctly identify and process <code>null</code> values at all recursive levels.</li>
+</ul>
+<hr />
+<h2>File Structure</h2>
+<h3>Key Files</h3>
+<ol>
+<li>
+<strong>JsonTraverser.fs</strong>:
+<ul>
+<li>Contains functions for parsing and traversing JSON files.</li>
+<li>Handles recursive navigation of objects and arrays.</li>
+</ul>
+</li>
+<li>
+<strong>JsonComparator.fs</strong>:
+<ul>
+<li>Implements recursive comparison logic for JSON files.</li>
+<li><p>Defines types like <code>ComparisonResult</code> and <code>UnionDictionary</code>.</p></li>
+</ul>
+</li>
+<li>
+<strong>Client.fs</strong>:
+<ul>
+<li>Manages client-side functionality, including file input handling and dynamic UI updates.</li>
+<li>Integrates filtering logic for comparison results.</li>
+</ul>
+</li>
+<li>
+<strong>Main.fs</strong>:
+<ul>
+<li>Server-side entry point for the application.</li>
+<li>Handles routing, templates, and rendering.</li>
+</ul>
+</li>
+<li>
+<strong>Main.html</strong>:
+<ul>
+<li>Defines the web interface with sections for file input, target selection, and comparison result display.</li>
+</ul>
+</li>
+<li>
+<strong>wsconfig.json</strong>:
+<ul>
+<li>Configuration file specifying project settings (e.g., output directory).</li>
+</ul>
+</li>
+</ol>
+<hr />
+<h2>How It Works</h2>
+<h3>1. Validation</h3>
+<p>The <code>traverseJsonDocument</code> function reads and parses JSON files using JavaScript's <code>JSON.parse</code>. Invalid files result in descriptive error messages.</p>
+<h3>2. Traversing</h3>
+<p>The <code>traverseElement</code> function recursively processes JSON structures:
+- Supports strings, numbers, booleans, arrays, objects, and <code>null</code>.
+- Ensures robust handling of edge cases like <code>null</code>.</p>
+<h3>3. Comparison</h3>
+<p>The <code>compareJsonValues</code> function compares two JSON structures recursively:
+- Identifies differences in keys, values, and array sizes.
+- Outputs results as a <code>UnionDictionary</code>.</p>
+<h3>4. Filtering</h3>
+<p>The filtering logic dynamically adjusts the displayed results based on user selection:
+- Filters by <code>same = true</code>, <code>same = false</code>, or shows all entries.
+- Updates output in real-time when the filter changes.</p>
+<hr />
+<h2>Dependencies</h2>
+<ol>
+<li>
+<strong>WebSharper</strong>:
+<ul>
+<li>Provides tools for building reactive web applications in F#.</li>
+</ul>
+</li>
+<li>
+<strong>JavaScript Native JSON Handling</strong>:
+<ul>
+<li><p>Uses JavaScript's native <code>JSON.parse</code> for parsing and processing JSON data directly in the browser environment.</p></li>
+</ul>
+</li>
+<li>
+<strong>FSharp.Formatting</strong> (optional):
+<ul>
+<li>Enables Markdown parsing for rendering documentation dynamically (if used).</li>
+</ul>
+</li>
+</ol>
+<hr />
+<h2>Usage</h2>
+<h3>Installation</h3>
+<ol>
+<li>Clone the repository:</li>
+</ol>
 
 </div>
 <footer class="footer">
