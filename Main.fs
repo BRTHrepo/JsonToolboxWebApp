@@ -48,7 +48,7 @@ module Site =
             "<p>README.md file not found.</p>"
     let HomePage ctx =
         Templating.Main ctx EndPoint.Home "Home" [
-            h1 [] [text "Say Hi to JavaScript!"]
+            // h1 [] [text "Say Hi to JavaScript!"]
             div [] [client (Client.Main())]
         ]
 

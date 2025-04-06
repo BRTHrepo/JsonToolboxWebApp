@@ -17,7 +17,7 @@ module Client =
     let inputId = "fileInput"
     let outputDiv1 = JS.Document.GetElementById("jsonOutput1")
     let outputDiv2 = JS.Document.GetElementById("jsonOutput2")
-    
+    let comparisonResultDiv = JS.Document.GetElementById("comparisonResult")
     let CompareJsons jsonString1 jsonString2 =
         try
             // JSON stringek feldolgozása JsonValue típusra
@@ -40,6 +40,19 @@ module Client =
         | _ -> 
             // Ha a bemenet nem 1 vagy 2, akkor null-t ad vissza
             null
+    let formatComparisonResult (dictionary: Map<string, ComparisonResult>) : string =
+        dictionary
+        |> Map.fold (fun acc key value ->
+            let same = sprintf "Same: %b" value.same
+            let json1 = sprintf "JSON1 Value: %A" value.json1Value
+            let json2 = sprintf "JSON2 Value: %A" value.json2Value
+            acc + sprintf "\nKey: %s\n  %s\n  %s\n  %s\n" key same json1 json2
+        ) ""
+    let updateHtmlWithFormattedResult (formattedResult: string) =
+        // Eredmény frissítése a HTML-ben
+        if not (isNull comparisonResultDiv) then
+            comparisonResultDiv.TextContent <- formattedResult
+
     let checkAllJsons () =
         try
               // Példa: két JSON betöltése és összehasonlítása
@@ -51,9 +64,13 @@ module Client =
             if not (isNull json1Content) && not (isNull json2Content) && not (json1Content.Length = 0) && not (json2Content.Length = 0) then
                 let result = CompareJsons json1Content json2Content
                 Console.Log("Comparison completed.", result)
+                // Formázott eredmény előállítása
+                let formattedResult = formatComparisonResult result
+                // Eredmény frissítése a HTML-ben
+                updateHtmlWithFormattedResult formattedResult
             else
-                Console.Log("One or both JSON contents are missing.")
-        with ex -> Console.Log("Error during JSON comparison: ", ex.Message)
+                updateHtmlWithFormattedResult "One or both JSON contents are missing."
+        with ex ->  updateHtmlWithFormattedResult (sprintf "Error during JSON comparison: %s" ex.Message)
     let DoSomething (input: string) =
         System.String(Array.rev (input.ToCharArray()))
     
@@ -145,8 +162,8 @@ module Client =
 
         Templates.MainTemplate
             .MainForm()
-            .OnSend(fun e ->
+            (*.OnSend(fun e ->
                 let res = DoSomething e.Vars.TextToReverse.Value
-                rvReversed := res)
+                rvReversed := res)*)
             .Reversed(rvReversed.View)
             .Doc()
