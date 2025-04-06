@@ -42,7 +42,7 @@
     </div>
 </nav>
 <div class="container">
-    <h1>Say Hi to JavaScript!</h1><div><div ws-1></div></div>
+    <div><div ws-1></div></div>
 </div>
 <footer class="footer">
     <div class="container">
@@ -98,13 +98,6 @@ wsbundle.Main().ReplaceInDom(e1);
 
 <div style="display:none" ws-children-template="MainForm"><div>
             
-            <input ws-var="TextToReverse" />
-            <button ws-onclick="OnSend">Check the jsons</button>
-            <hr />
-            <h4 class="text-muted">Client calculated response:</h4>
-            <div class="jumbotron" style="max-height: 2em; overflow-y: auto; border: 1px solid #ccc; padding: 5px;">${Reversed}</div>
-
-            
             <h2>Select a JSON File</h2>
             <input type="file" id="fileInput" accept=".json" />
             <hr />
@@ -123,5 +116,11 @@ wsbundle.Main().ReplaceInDom(e1);
 
             <h3>JSON Content 2:</h3>
             <pre id="jsonOutput2" style="max-height: 10em; overflow-y: auto; border: 1px solid #ccc; padding: 5px;"></pre>
+            <h4 class="text-muted">response:</h4>
+            <div class="jumbotron" style="max-height: 2em; overflow-y: auto; border: 1px solid #ccc; padding: 5px;">${Reversed}</div>
+            
+            <h3>Result:</h3>
+            <pre id="comparisonResult" style="max-height: 10em; overflow-y: auto; border: 1px solid #ccc; padding: 5px;"></pre>
+
         </div></div></body>
 </html>
