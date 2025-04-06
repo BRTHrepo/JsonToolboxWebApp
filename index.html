@@ -118,9 +118,17 @@ wsbundle.Main().ReplaceInDom(e1);
             <pre id="jsonOutput2" style="max-height: 10em; overflow-y: auto; border: 1px solid #ccc; padding: 5px;"></pre>
             <h4 class="text-muted">response:</h4>
             <div class="jumbotron" style="max-height: 2em; overflow-y: auto; border: 1px solid #ccc; padding: 5px;">${Reversed}</div>
-            
+            <div>
+                <h3>Filter Comparison Results</h3>
+                <label for="filterSame">Show results where:</label>
+                <select id="filterSame">
+                    <option value="all">All</option>
+                    <option value="true">Same</option>
+                    <option value="false">Different</option>
+                </select>
+            </div>
             <h3>Result:</h3>
-            <pre id="comparisonResult" style="max-height: 10em; overflow-y: auto; border: 1px solid #ccc; padding: 5px;"></pre>
+            <pre id="comparisonResult" style="max-height: 15em; overflow-y: auto; border: 1px solid #ccc; padding: 5px;"></pre>
 
         </div></div></body>
 </html>

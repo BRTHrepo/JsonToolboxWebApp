@@ -92,6 +92,7 @@ export function Main(){
   };
   globalThis.onload=() => {
     const fileInput=globalThis.document.getElementById(inputId());
+    if(!(filterSelect()==null))filterSelect().onchange=() => checkAllJsons();
     return!Equals(fileInput, null)?void(fileInput.onchange=() => {
       const files=fileInput.files;
       if(files.length>0){
@@ -129,6 +130,26 @@ export function Main(){
 function inputId(){
   return _c_2.inputId;
 }
+function filterSelect(){
+  return _c_2.filterSelect;
+}
+function checkAllJsons(){
+  try {
+    const json1Content=getOutputDivTextContent(1);
+    console.log("json1Content: ", json1Content);
+    const json2Content=getOutputDivTextContent(2);
+    console.log("json1Content: ", json1Content);
+    if(!(json1Content==null)&&!(json2Content==null)&&!(json1Content.length===0)&&!(json2Content.length===0)){
+      const result=CompareJsons(json1Content, json2Content);
+      console.log("Comparison completed.", result);
+      updateHtmlWithFormattedResult(formatComparisonResult(filterResultsBySame(result, filterSelect().value)));
+    }
+    else updateHtmlWithFormattedResult("One or both JSON contents are missing.");
+  }
+  catch(ex){
+    updateHtmlWithFormattedResult("Error during JSON comparison: "+toSafe(ex.message));
+  }
+}
 function ReadJsonFromInput(file){
   const _1=null;
   return Delay(() => {
@@ -148,23 +169,6 @@ function outputDiv1(){
 function outputDiv2(){
   return _c_2.outputDiv2;
 }
-function checkAllJsons(){
-  try {
-    const json1Content=getOutputDivTextContent(1);
-    console.log("json1Content: ", json1Content);
-    const json2Content=getOutputDivTextContent(2);
-    console.log("json1Content: ", json1Content);
-    if(!(json1Content==null)&&!(json2Content==null)&&!(json1Content.length===0)&&!(json2Content.length===0)){
-      const result=CompareJsons(json1Content, json2Content);
-      console.log("Comparison completed.", result);
-      updateHtmlWithFormattedResult(formatComparisonResult(result));
-    }
-    else updateHtmlWithFormattedResult("One or both JSON contents are missing.");
-  }
-  catch(ex){
-    updateHtmlWithFormattedResult("Error during JSON comparison: "+toSafe(ex.message));
-  }
-}
 function getOutputDivTextContent(id){
   return id===1?outputDiv1()==null?null:outputDiv1().textContent:id===2?outputDiv2()==null?null:outputDiv2().textContent:null;
 }
@@ -182,6 +186,9 @@ function updateHtmlWithFormattedResult(formattedResult){
 }
 function formatComparisonResult(dictionary){
   return Fold((_1, _2, _3) => _1+("\nKey: "+toSafe(_2)+"\n  "+toSafe("Same: "+String(_3.same))+"\n  "+toSafe("JSON1 Value: "+Printer_JsonValue(_3.json1Value))+"\n  "+toSafe("JSON2 Value: "+Printer_JsonValue(_3.json2Value))+"\n"), "", dictionary);
+}
+function filterResultsBySame(results, filter_2){
+  return filter_2=="true"?Filter((_1, _2) => _2.same, results):filter_2=="false"?Filter((_1, _2) =>!_2.same, results):results;
 }
 function comparisonResultDiv(){
   return _c_2.comparisonResultDiv;
@@ -552,7 +559,7 @@ class Dictionary extends Object_1 {
     const d=this.data[h];
     if(d==null)return false;
     else {
-      const r=filter((a) =>!this.equals.apply(null, [(KeyValue(a))[0], k]), d);
+      const r=filter_1((a) =>!this.equals.apply(null, [(KeyValue(a))[0], k]), d);
       return length(r)<d.length&&(this.count=this.count-1,this.data[h]=r,true);
     }
   }
@@ -851,6 +858,7 @@ let _c_2=Lazy((_i) => class $StartupCode_Client {
   static {
     _c_2=_i(this);
   }
+  static filterSelect;
   static comparisonResultDiv;
   static outputDiv2;
   static outputDiv1;
@@ -860,6 +868,7 @@ let _c_2=Lazy((_i) => class $StartupCode_Client {
     this.outputDiv1=globalThis.document.getElementById("jsonOutput1");
     this.outputDiv2=globalThis.document.getElementById("jsonOutput2");
     this.comparisonResultDiv=globalThis.document.getElementById("comparisonResult");
+    this.filterSelect=globalThis.document.getElementById("filterSame");
   }
 });
 function Delay(mk){
@@ -874,7 +883,7 @@ function Delay(mk){
 }
 function TryWith(r, f){
   return(c) => {
-    r(New((a) => {
+    r(New_1((a) => {
       if(a.$==0)c.k(Ok(a.$0));
       else if(a.$==1){
         try {
@@ -890,7 +899,7 @@ function TryWith(r, f){
 }
 function Bind(r, f){
   return checkCancel((c) => {
-    r(New((a) => {
+    r(New_1((a) => {
       if(a.$==0){
         const x=a.$0;
         scheduler().Fork(() => {
@@ -918,7 +927,7 @@ function Start(c, ctOpt){
   const d=(defCTS())[0];
   const ct=ctOpt==null?d:ctOpt.$0;
   scheduler().Fork(() => {
-    if(!ct.c)c(New((a) => {
+    if(!ct.c)c(New_1((a) => {
       if(a.$==1)UncaughtAsyncError(a.$0);
     }, ct));
   });
@@ -1083,7 +1092,96 @@ function Waiting(Item1, Item2){
     $1:Item2
   };
 }
-function New(k, ct){
+function compareJsonDictionaries(dict1, dict2){
+  return OfArray(ofSeq(collect_1((key) => {
+    const _1=dict1.TryFind(key);
+    const _2=dict2.TryFind(key);
+    return _1==null?_2==null?compareJsonValues(key, Null, Null):compareJsonValues(key, Null, _2.$0):_2==null?compareJsonValues(key, _1.$0, Null):compareJsonValues(key, _1.$0, _2.$0);
+  }, ofSeq_1(new FSharpSet("New_1", OfSeq(append_1(ofSeq_1(dict1.Keys), ofSeq_1(dict2.Keys))))))));
+}
+function compareJsonValues(path, value1, value2){
+  let _1;
+  switch(value1.$==6?value2.$==6?0:1:value1.$==5?value2.$==6?2:value2.$==5?(_1=[value1.$0, value2.$0],3):5:value1.$==4?value2.$==6?2:value2.$==4?(_1=[value1.$0, value2.$0],4):5:value2.$==6?2:5){
+    case 0:
+      return ofArray([[path, New(true, Null, Null)]]);
+    case 1:
+      return ofArray([[path, New(false, Null, value2)]]);
+    case 2:
+      return ofArray([[path, New(false, value1, Null)]]);
+    case 3:
+      const obj1=_1[0];
+      const obj2=_1[1];
+      return ofSeq_1(collect((key) => {
+        const o=obj1.TryFind(key);
+        const o_1=obj2.TryFind(key);
+        return compareJsonValues(path+"."+key, o==null?Null:o.$0, o_1==null?Null:o_1.$0);
+      }, new FSharpSet("New_1", OfSeq(append(new FSharpSet("New_1", OfSeq(map((t) => t[0], ToSeq(obj1)))), new FSharpSet("New_1", OfSeq(map((t) => t[0], ToSeq(obj2)))))))));
+    case 4:
+      const arr1=_1[0];
+      const arr2=_1[1];
+      const a=arr1.Length;
+      const b=arr2.Length;
+      let _2=Compare(a, b)===1?a:b;
+      let _3=_2-1;
+      let _4=range(0, _3);
+      let _5=ofSeq_1(_4);
+      return collect_1((i) => {
+        const o=tryItem(i, arr1);
+        const o_1=tryItem(i, arr2);
+        return compareJsonValues(String(path)+"["+String(i)+"]", o==null?Null:o.$0, o_1==null?Null:o_1.$0);
+      }, _5);
+    case 5:
+      return!Equals(value1, value2)?ofArray([[path, New(false, value1, value2)]]):ofArray([[path, New(true, value1, value2)]]);
+  }
+}
+function traverseJsonDocument(jsonString){
+  const jsObj=JSON.parse(jsonString);
+  function traverseElement(element){
+    return(path) => {
+      switch(typeof element=="string"?0:typeof element=="number"?1:typeof element=="number"?2:typeof element=="boolean"?3:element instanceof Array?4:typeof element=="object"?!(element==null)?5:element==null?6:7:7){
+        case 0:
+          return delay(() =>[[path, String_1(element)]]);
+        case 1:
+          return delay(() =>[[path, Integer(element)]]);
+        case 2:
+          return delay(() =>[[path, Float(element)]]);
+        case 3:
+          return delay(() =>[[path, Boolean(element)]]);
+        case 4:
+          return concat(init(element.length, (index) =>(traverseElement(element[index]))(path+"["+String(index)+"]")));
+        case 5:
+          return collect((key) =>(traverseElement(element[key]))(path==""?key:path+"."+key), Object.keys(element));
+        case 6:
+          return delay(() =>[[path, Null]]);
+        case 7:
+          return FailWith("Unsupported JSON value type "+toSafe(path));
+      }
+    };
+  }
+  return OfArray(ofSeq((traverseElement(jsObj))("")));
+}
+function Fold(f, s, m){
+  return fold((_1, _2) => f(_1, _2.Key, _2.Value), s, Enumerate(false, m.Tree));
+}
+function Filter(f, m){
+  const d=ofSeq(filter((kv) => f(kv.Key, kv.Value), Enumerate(false, m.Tree)));
+  let _1=Build(d, 0, d.length-1);
+  return new FSharpMap("New_1", _1);
+}
+function OfArray(a){
+  return new FSharpMap("New_1", OfSeq(map((_1) => Pair.New(_1[0], _1[1]), a)));
+}
+function ToSeq(m){
+  return map((kv) =>[kv.Key, kv.Value], Enumerate(false, m.Tree));
+}
+function New(same, json1Value, json2Value){
+  return{
+    same:same, 
+    json1Value:json1Value, 
+    json2Value:json2Value
+  };
+}
+function New_1(k, ct){
   return{k:k, ct:ct};
 }
 function No(Item){
@@ -1114,68 +1212,6 @@ let _c_3=Lazy((_i) => class $StartupCode_Concurrency {
     };
   }
 });
-function compareJsonDictionaries(dict1, dict2){
-  return OfArray(ofSeq(collect_1((key) => {
-    const _1=dict1.TryFind(key);
-    const _2=dict2.TryFind(key);
-    return _1==null?_2==null?compareJsonValues(key, Null, Null):compareJsonValues(key, Null, _2.$0):_2==null?compareJsonValues(key, _1.$0, Null):compareJsonValues(key, _1.$0, _2.$0);
-  }, ofSeq_1(new FSharpSet("New_1", OfSeq(append_1(ofSeq_1(dict1.Keys), ofSeq_1(dict2.Keys))))))));
-}
-function compareJsonValues(path, value1, value2){
-  let _1;
-  switch(value1.$==5?value2.$==5?(_1=[value1.$0, value2.$0],0):2:value1.$==4?value2.$==4?(_1=[value1.$0, value2.$0],1):2:2){
-    case 0:
-      const obj1=_1[0];
-      const obj2=_1[1];
-      const results=ofSeq_1(collect((key) => {
-        const newPath=path+"."+key;
-        const _6=obj1.TryFind(key);
-        const _7=obj2.TryFind(key);
-        return _6==null?_7!=null&&_7.$==1?compareJsonValues(newPath, Null, _7.$0):FSharpList.Empty:_7==null?compareJsonValues(newPath, _6.$0, Null):compareJsonValues(newPath, _6.$0, _7.$0);
-      }, new FSharpSet("New_1", OfSeq(append(new FSharpSet("New_1", OfSeq(map((t) => t[0], ToSeq(obj1)))), new FSharpSet("New_1", OfSeq(map((t) => t[0], ToSeq(obj2)))))))));
-      return forAll((t) => t[1].same, results)?ofArray([[path, New_1(true, value1, value2)]]):results;
-    case 1:
-      const arr1=_1[0];
-      const arr2=_1[1];
-      const a=arr1.Length;
-      const b=arr2.Length;
-      let _2=Compare(a, b)===1?a:b;
-      let _3=_2-1;
-      let _4=range(0, _3);
-      let _5=ofSeq_1(_4);
-      const results_1=collect_1((i) => {
-        const _6=tryItem(i, arr1);
-        const _7=tryItem(i, arr2);
-        return _6==null?_7!=null&&_7.$==1?compareJsonValues(String(path)+"["+String(i)+"]", Null, _7.$0):FSharpList.Empty:_7==null?compareJsonValues(String(path)+"["+String(i)+"]", _6.$0, Null):compareJsonValues(String(path)+"["+String(i)+"]", _6.$0, _7.$0);
-      }, _5);
-      return forAll((t) => t[1].same, results_1)?ofArray([[path, New_1(true, value1, value2)]]):results_1;
-    case 2:
-      return!Equals(value1, value2)?ofArray([[path, New_1(false, value1, value2)]]):ofArray([[path, New_1(true, value1, value2)]]);
-  }
-}
-function traverseJsonDocument(jsonString){
-  const jsObj=JSON.parse(jsonString);
-  function traverseElement(element){
-    return(path) => typeof element=="string"?delay(() =>[[path, String_1(element)]]):typeof element=="number"?delay(() =>[[path, Integer(element)]]):typeof element=="number"?delay(() =>[[path, Float(element)]]):typeof element=="boolean"?delay(() =>[[path, Boolean(element)]]):element instanceof Array?concat(init(element.length, (index) =>(traverseElement(element[index]))(path+"["+String(index)+"]"))):typeof element=="object"?collect((key) =>(traverseElement(element[key]))(path==""?key:path+"."+key), Object.keys(element)):Equals(element, null)?delay(() =>[[path, Null]]):FailWith("Unsupported JSON value type");
-  }
-  return OfArray(ofSeq((traverseElement(jsObj))("")));
-}
-function Fold(f, s, m){
-  return fold((_1, _2) => f(_1, _2.Key, _2.Value), s, Enumerate(false, m.Tree));
-}
-function OfArray(a){
-  return new FSharpMap("New_1", OfSeq(map((_1) => Pair.New(_1[0], _1[1]), a)));
-}
-function ToSeq(m){
-  return map((kv) =>[kv.Key, kv.Value], Enumerate(false, m.Tree));
-}
-function New_1(same, json1Value, json2Value){
-  return{
-    same:same, 
-    json1Value:json1Value, 
-    json2Value:json2Value
-  };
-}
 function New_2(IsCancellationRequested, Registrations){
   return{c:IsCancellationRequested, r:Registrations};
 }
@@ -1370,6 +1406,24 @@ function fold(f, x, s){
     if(typeof e=="object"&&isIDisposable(e))e.Dispose();
   }
 }
+function filter(f, s){
+  return{GetEnumerator:() => {
+    const o=Get(s);
+    return new T(null, null, (e) => {
+      let loop=o.MoveNext();
+      let c;
+      let res=false;
+      while(loop)
+        {
+          c=o.Current;
+          f(c)?(e.c=c,res=true,loop=false):!o.MoveNext()?loop=false:void 0;
+        }
+      return res;
+    }, () => {
+      o.Dispose();
+    });
+  }};
+}
 function map(f, s){
   return{GetEnumerator:() => {
     const en=Get(s);
@@ -1558,19 +1612,6 @@ function map_1(f, arr){
   for(let i=0, _1=arr.length-1;i<=_1;i++)r[i]=f(arr[i]);
   return r;
 }
-function tryFindIndex(f, arr){
-  let res=null;
-  let i=0;
-  while(i<arr.length&&res==null)
-    {
-      f(arr[i])?res=Some(i):void 0;
-      i=i+1;
-    }
-  return res;
-}
-function concat_1(xs){
-  return Array.prototype.concat.apply([], ofSeq(xs));
-}
 function ofSeq(xs){
   if(xs instanceof Array)return xs.slice();
   else if(xs instanceof FSharpList)return ofList(xs);
@@ -1587,8 +1628,31 @@ function ofSeq(xs){
     }
   }
 }
+function tryFindIndex(f, arr){
+  let res=null;
+  let i=0;
+  while(i<arr.length&&res==null)
+    {
+      f(arr[i])?res=Some(i):void 0;
+      i=i+1;
+    }
+  return res;
+}
+function concat_1(xs){
+  return Array.prototype.concat.apply([], ofSeq(xs));
+}
 function sortInPlace(arr){
   mapInPlace((t) => t[0], mapiInPlace((_1, _2) =>[_2, _1], arr).sort(Compare));
+}
+function ofList(xs){
+  const q=[];
+  let l=xs;
+  while(!(l.$==0))
+    {
+      q.push(head_1(l));
+      l=tail(l);
+    }
+  return q;
 }
 function exists_1(f, x){
   let e=false;
@@ -1607,17 +1671,7 @@ function foldBack(f, arr, zero){
   for(let i=1, _1=len;i<=_1;i++)acc=f(arr[len-i], acc);
   return acc;
 }
-function ofList(xs){
-  const q=[];
-  let l=xs;
-  while(!(l.$==0))
-    {
-      q.push(head_1(l));
-      l=tail(l);
-    }
-  return q;
-}
-function filter(f, arr){
+function filter_1(f, arr){
   const r=[];
   for(let i=0, _1=arr.length-1;i<=_1;i++)if(f(arr[i]))r.push(arr[i]);
   return r;
@@ -2392,49 +2446,6 @@ function Obsolete(sn){
     }
   }
 }
-class Scheduler extends Object_1 {
-  idle;
-  robin;
-  Fork(action){
-    this.robin.push(action);
-    this.idle?(this.idle=false,setTimeout(() => {
-      this.tick();
-    }, 0)):void 0;
-  }
-  tick(){
-    const t=Date.now();
-    let loop=true;
-    while(loop)
-      if(this.robin.length===0){
-        this.idle=true;
-        loop=false;
-      }
-      else {
-        (this.robin.shift())();
-        Date.now()-t>40?(setTimeout(() => {
-          this.tick();
-        }, 0),loop=false):void 0;
-      }
-  }
-  constructor(){
-    super();
-    this.idle=true;
-    this.robin=[];
-  }
-}
-class CancellationTokenSource extends Object_1 {
-  init;
-  c;
-  pending;
-  r;
-  constructor(){
-    super();
-    this.c=false;
-    this.pending=null;
-    this.r=[];
-    this.init=1;
-  }
-}
 function collect_1(f, l){
   return ofSeq_1(collect(f, l));
 }
@@ -2467,16 +2478,6 @@ function ofSeq_1(s){
       if(typeof e=="object"&&isIDisposable(e))e.Dispose();
     }
   }
-}
-function forAll(p, x){
-  let a=true;
-  let l=x;
-  while(a&&l.$==1)
-    {
-      a=p(l.$0);
-      l=l.$1;
-    }
-  return a;
 }
 function ofArray(arr){
   let r=FSharpList.Empty;
@@ -2608,6 +2609,13 @@ function Enumerate(flip, t){
   }
   return unfold((_1) => gen(_1[0], _1[1]), [t, FSharpList.Empty]);
 }
+function Build(data, min, max_1){
+  if(max_1-min+1<=0)return null;
+  else {
+    const center=(min+max_1)/2>>0;
+    return Branch(get(data, center), Build(data, min, center-1), Build(data, center+1, max_1));
+  }
+}
 function Lookup(k, t){
   let spine=[];
   let t_1=t;
@@ -2620,13 +2628,6 @@ function Lookup(k, t){
       else m===1?(spine.unshift([true, t_1.Node, t_1.Left]),t_1=t_1.Right):(spine.unshift([false, t_1.Node, t_1.Right]),t_1=t_1.Left);
     }
   return[t_1, spine];
-}
-function Build(data, min, max_1){
-  if(max_1-min+1<=0)return null;
-  else {
-    const center=(min+max_1)/2>>0;
-    return Branch(get(data, center), Build(data, min, center-1), Build(data, center+1, max_1));
-  }
 }
 function Branch(node, left, right){
   const a=left==null?0:left.Height;
@@ -2649,6 +2650,49 @@ class Pair {
   }
   static New(Key, Value_1){
     return Create_1(Pair, {Key:Key, Value:Value_1});
+  }
+}
+class Scheduler extends Object_1 {
+  idle;
+  robin;
+  Fork(action){
+    this.robin.push(action);
+    this.idle?(this.idle=false,setTimeout(() => {
+      this.tick();
+    }, 0)):void 0;
+  }
+  tick(){
+    const t=Date.now();
+    let loop=true;
+    while(loop)
+      if(this.robin.length===0){
+        this.idle=true;
+        loop=false;
+      }
+      else {
+        (this.robin.shift())();
+        Date.now()-t>40?(setTimeout(() => {
+          this.tick();
+        }, 0),loop=false):void 0;
+      }
+  }
+  constructor(){
+    super();
+    this.idle=true;
+    this.robin=[];
+  }
+}
+class CancellationTokenSource extends Object_1 {
+  init;
+  c;
+  pending;
+  r;
+  constructor(){
+    super();
+    this.c=false;
+    this.pending=null;
+    this.r=[];
+    this.init=1;
   }
 }
 function Get(x){
@@ -2746,6 +2790,49 @@ let _c_4=Lazy((_i) => class $StartupCode_Abbrev {
     this.counter=0;
   }
 });
+class FSharpList {
+  get Length(){
+    return length_1(this);
+  }
+  static Empty=Create_1(FSharpList, {$:0});
+  static Cons(Head, Tail){
+    return Create_1(FSharpList, {
+      $:1, 
+      $0:Head, 
+      $1:Tail
+    });
+  }
+  GetEnumerator(){
+    return new T(this, null, (e) => {
+      const m=e.s;
+      return m.$==0?false:(e.c=m.$0,e.s=m.$1,true);
+    }, void 0);
+  }
+}
+function concat_2(separator, strings){
+  return ofSeq(strings).join(separator);
+}
+function SplitChars(s, sep, opts){
+  return Split(s, new RegExp("["+RegexEscape(sep.join(""))+"]"), opts);
+}
+function StartsWith(t, s){
+  return t.substring(0, s.length)==s;
+}
+function Split(s, pat, opts){
+  return opts===1?filter_1((x) => x!=="", SplitWith(s, pat)):SplitWith(s, pat);
+}
+function RegexEscape(s){
+  return s.replace(new RegExp("[-\\/\\\\^$*+?.()|[\\]{}]", "g"), "\\$&");
+}
+function SplitWith(str, pat){
+  return str.split(pat);
+}
+function forall_2(f, s){
+  return forall(f, protect(s));
+}
+function protect(s){
+  return s==null?"":s;
+}
 class OperationCanceledException extends Error {
   ct;
   static New(ct){
@@ -2772,49 +2859,6 @@ class OperationCanceledException extends Error {
       this.ct=ct_1;
     }
   }
-}
-class FSharpList {
-  static Empty=Create_1(FSharpList, {$:0});
-  get Length(){
-    return length_1(this);
-  }
-  static Cons(Head, Tail){
-    return Create_1(FSharpList, {
-      $:1, 
-      $0:Head, 
-      $1:Tail
-    });
-  }
-  GetEnumerator(){
-    return new T(this, null, (e) => {
-      const m=e.s;
-      return m.$==0?false:(e.c=m.$0,e.s=m.$1,true);
-    }, void 0);
-  }
-}
-function concat_2(separator, strings){
-  return ofSeq(strings).join(separator);
-}
-function SplitChars(s, sep, opts){
-  return Split(s, new RegExp("["+RegexEscape(sep.join(""))+"]"), opts);
-}
-function StartsWith(t, s){
-  return t.substring(0, s.length)==s;
-}
-function Split(s, pat, opts){
-  return opts===1?filter((x) => x!=="", SplitWith(s, pat)):SplitWith(s, pat);
-}
-function RegexEscape(s){
-  return s.replace(new RegExp("[-\\/\\\\^$*+?.()|[\\]{}]", "g"), "\\$&");
-}
-function SplitWith(str, pat){
-  return str.split(pat);
-}
-function forall_2(f, s){
-  return forall(f, protect(s));
-}
-function protect(s){
-  return s==null?"":s;
 }
 let _c_5=Lazy((_i) => class $StartupCode_Templates {
   static {
@@ -3026,7 +3070,7 @@ function removeHolesExcept(instance, dontRemove){
     if(!dontRemove.Contains(e.getAttribute("ws-replace")))e.parentNode.removeChild(e);
   });
   foreachNotPreserved(instance, "[ws-on]", (e) => {
-    e.setAttribute("ws-on", concat_2(" ", filter((x) => dontRemove.Contains(get(SplitChars(x, [":"], 1), 1)), SplitChars(e.getAttribute("ws-on"), [" "], 1))));
+    e.setAttribute("ws-on", concat_2(" ", filter_1((x) => dontRemove.Contains(get(SplitChars(x, [":"], 1), 1)), SplitChars(e.getAttribute("ws-on"), [" "], 1))));
   });
   foreachNotPreserved(instance, "[ws-attr-holes]", (e) => {
     const holeAttrs=SplitChars(e.getAttribute("ws-attr-holes"), [" "], 1);
@@ -3421,14 +3465,14 @@ function SyncElemNodesNextFrame(childrenOnly, st){
   }
 }
 function ComputeExitAnim(st, cur){
-  return Concat(map_1((n) => GetExitAnim(n.Attr), ToArray(Except(cur, Filter((n) => HasExitAnim(n.Attr), st.PreviousNodes)))));
+  return Concat(map_1((n) => GetExitAnim(n.Attr), ToArray(Except(cur, Filter_1((n) => HasExitAnim(n.Attr), st.PreviousNodes)))));
 }
 function ComputeEnterAnim(st, cur){
-  return Concat(map_1((n) => GetEnterAnim(n.Attr), ToArray(Except(st.PreviousNodes, Filter((n) => HasEnterAnim(n.Attr), cur)))));
+  return Concat(map_1((n) => GetEnterAnim(n.Attr), ToArray(Except(st.PreviousNodes, Filter_1((n) => HasEnterAnim(n.Attr), cur)))));
 }
 function ComputeChangeAnim(st, cur){
   const f=(n) => HasChangeAnim(n.Attr);
-  const relevant=(a) => Filter(f, a);
+  const relevant=(a) => Filter_1(f, a);
   return Concat(map_1((n) => GetChangeAnim(n.Attr), ToArray(Intersect(relevant(st.PreviousNodes), relevant(cur)))));
 }
 function SyncElemNode(childrenOnly, el){
@@ -3887,8 +3931,8 @@ function FindAll(doc){
 function NodeSet(Item){
   return{$:0, $0:Item};
 }
-function Filter(f, a){
-  return NodeSet(Filter_1(f, a.$0));
+function Filter_1(f, a){
+  return NodeSet(Filter_2(f, a.$0));
 }
 function Except(a, a_1){
   return NodeSet(Except_1(a.$0, a_1.$0));
@@ -4210,8 +4254,8 @@ class Easing extends Object_1 {
     this.transformTime=transformTime;
   }
 }
-function Filter_1(ok, set_1){
-  return new HashSet("New_2", filter(ok, ToArray_2(set_1)));
+function Filter_2(ok, set_1){
+  return new HashSet("New_2", filter_1(ok, ToArray_2(set_1)));
 }
 function Except_1(excluded, included){
   const set_1=new HashSet("New_2", ToArray_2(included));
@@ -4377,7 +4421,7 @@ function Children(elem, delims){
 }
 function Except_2(a, a_1){
   const excluded=a.$0;
-  return DomNodes(filter((n) => forall_1((k) =>!(n===k), excluded), a_1.$0));
+  return DomNodes(filter_1((n) => forall_1((k) =>!(n===k), excluded), a_1.$0));
 }
 function Iter(f, a){
   iter_1(f, a.$0);
