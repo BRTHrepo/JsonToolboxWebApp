@@ -1,13 +1,12 @@
 ﻿namespace JsonToolboxWebApp
 
-open System.Text.Json
+open JsonToolboxWebApp.JsonComparator.JsonComparator
+open JsonToolboxWebApp.JsonTraverser
 open WebSharper
 open WebSharper.JavaScript
-open WebSharper.JavaScript.Dom
 open WebSharper.UI
 open WebSharper.UI.Notation
 open WebSharper.UI.Templating
-
 [<JavaScript>]
 module Templates =
     type MainTemplate = Templating.Template<"Main.html", ClientLoad.FromDocument, ServerLoad.PerRequest>
@@ -19,7 +18,20 @@ module Client =
     let outputDiv1 = JS.Document.GetElementById("jsonOutput1")
     let outputDiv2 = JS.Document.GetElementById("jsonOutput2")
     
+    let CompareJsons jsonString1 jsonString2 =
+        try
+            // JSON stringek feldolgozása JsonValue típusra
+            let json1 = traverseJsonDocument jsonString1
+            let json2 = traverseJsonDocument jsonString2
+
+            // Összehasonlítás végrehajtása
+            let comparisonResult = compareJsonDictionaries json1 json2
+            comparisonResult // További feldolgozásra visszaadható
+        with ex ->
+            Console.Log("Error during JSON comparison: ", ex.Message)
+            raise ex
     let getOutputDivTextContent (id: int) =
+        // A bemeneti id alapján visszaadja a megfelelő output div szövegét 
         match id with
         | 1 ->
             if isNull outputDiv1 then null else outputDiv1.TextContent
@@ -28,6 +40,20 @@ module Client =
         | _ -> 
             // Ha a bemenet nem 1 vagy 2, akkor null-t ad vissza
             null
+    let checkAllJsons () =
+        try
+              // Példa: két JSON betöltése és összehasonlítása
+            let json1Content = getOutputDivTextContent 1
+            Console.Log("json1Content: ", json1Content)
+            let json2Content = getOutputDivTextContent 2
+            Console.Log("json1Content: ", json1Content)
+
+            if not (isNull json1Content) && not (isNull json2Content) && not (json1Content.Length = 0) && not (json2Content.Length = 0) then
+                let result = CompareJsons json1Content json2Content
+                Console.Log("Comparison completed.", result)
+            else
+                Console.Log("One or both JSON contents are missing.")
+        with ex -> Console.Log("Error during JSON comparison: ", ex.Message)
     let DoSomething (input: string) =
         System.String(Array.rev (input.ToCharArray()))
     
@@ -100,7 +126,7 @@ module Client =
                                                 | _ ->
                                                     updateReversed "Invalid selection in dropdown."
                                                     Console.Log("Invalid selection in dropdown.")
-                                                  
+                                        checkAllJsons ()
                                     with ex ->
                                         updateReversed (sprintf "Error in Json (if it is a real json): %s" ex.Message)
                                         Console.Log(sprintf "Error in Main: %s" ex.Message)

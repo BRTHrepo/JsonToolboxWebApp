@@ -7,9 +7,13 @@
     <StartArguments>$(MSBuildThisFileDirectory)bin\html</StartArguments>
     <StartWorkingDirectory>$(MSBuildThisFileDirectory)bin\html</StartWorkingDirectory>
     <ProjectRootDir>$(MSBuildThisFileDirectory)src</ProjectRootDir>
+    <WebSharperProject>spa</WebSharperProject> 
   </PropertyGroup>
   
   <ItemGroup>
+    <Compile Include="src\JsonValidator.fs" />
+    <Compile Include="src\JsonTraverser.fs" />
+    <Compile Include="src\JsonComparator.fs" />
     <Content Include="Main.html" />
     <Compile Include="Client.fs" />
     <Compile Include="Main.fs" />
@@ -18,9 +22,7 @@
     <None Include="esbuild.config.mjs" />
     <None Include="wsconfig.json" />
 
-    <Compile Include="src\JsonValidator.fs" />
-    <Compile Include="src\JsonTraverser.fs" />
-    <Compile Include="src\JsonComparator.fs" />
+
   </ItemGroup>
 
   <ItemGroup>

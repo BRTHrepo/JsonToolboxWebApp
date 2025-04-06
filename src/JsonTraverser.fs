@@ -1,11 +1,12 @@
-﻿
+﻿namespace JsonToolboxWebApp
 
-module JsonToolboxWebApp.JsonTraverser 
+open WebSharper
+open WebSharper.JavaScript
 
-    open System
-    open System.Text.Json
+[<JavaScript>]
+module JsonTraverser =
 
-     type JsonValue = 
+    type JsonValue = 
         | String of string
         | Integer of int
         | Float of float
@@ -13,44 +14,34 @@ module JsonToolboxWebApp.JsonTraverser
         | Array of JsonValue list
         | Object of Map<string, JsonValue>
         | Null
-        
-    let JsonObject = Map<string, JsonValue>
 
-    // Function to convert a JsonElement to a JsonValue
-    let rec jsonElementToJsonValue (element: JsonElement) : JsonValue =
-        match element.ValueKind with
-        | JsonValueKind.String -> String (element.GetString())
-        | JsonValueKind.True -> Boolean true
-        | JsonValueKind.False -> Boolean false
-        | JsonValueKind.Number when element.TryGetInt32() |> fst ->
-            Integer (element.GetInt32())
-        | JsonValueKind.Number ->
-            Float (element.GetDouble())
-        | JsonValueKind.Array ->
-            Array (element.EnumerateArray()
-                   |> Seq.map jsonElementToJsonValue
-                   |> List.ofSeq)
-        | JsonValueKind.Object ->
-            Object (element.EnumerateObject()
-                    |> Seq.map (fun prop -> prop.Name, jsonElementToJsonValue prop.Value)
-                    |> Map.ofSeq)
-        | JsonValueKind.Null -> Null
-        | _ -> failwith "Unsupported JSON value kind"
+    let traverseJsonDocument (jsonString: string) : Map<string, JsonValue> =
+        // JSON string átalakítása natív JavaScript objektummá
+        let jsObj = JS.Inline("JSON.parse($0)", jsonString)
 
-
-    // Function to traverse a JsonDocument and return a dictionary of key-value pairs
-    let traverseJsonDocument (jsonDoc: JsonDocument) : Map<string, JsonValue> =
-        let root = jsonDoc.RootElement
-        let rec traverseElement (element: JsonElement) (path: string) =
-            match element.ValueKind with
-            | JsonValueKind.Object ->
-                element.EnumerateObject()
-                |> Seq.map (fun prop ->
-                    let newPath = if String.IsNullOrEmpty path then prop.Name else path + "." + prop.Name
-                    (newPath, jsonElementToJsonValue prop.Value))
-                |> Map.ofSeq
-            | _ -> Map.ofList [(path, jsonElementToJsonValue element)]
-        
-        traverseElement root ""
-
-
+        let rec traverseElement (element: obj) (path: string) : seq<string * JsonValue> =
+            match element with
+            | :? string as str -> seq { yield (path, String str) }
+            | :? int as intVal -> seq { yield (path, Integer intVal) }
+            | :? float as floatVal -> seq { yield (path, Float floatVal) }
+            | :? bool as boolVal -> seq { yield (path, Boolean boolVal) }
+            | :? JavaScript.Array as array ->
+                // JSON tömb feldolgozása natívan Inline segítségével
+                let length = JS.Inline("$0.length", array)
+                Seq.init length (fun index ->
+                    let item = JS.Inline("$0[$1]", array, index)
+                    let newPath = path + "[" + string index + "]"
+                    traverseElement item newPath)
+                |> Seq.concat
+            | :? JavaScript.Object as jsObj ->
+                // JSON objektum feldolgozása natívan Inline segítségével
+                let keys = JS.Inline("Object.keys($0)", jsObj) : string[]
+                keys
+                |> Seq.collect (fun key ->
+                    let value = JS.Inline("$0[$1]", jsObj, key)
+                    traverseElement value (if path = "" then key else path + "." + key))
+            | null -> seq { yield (path, Null) }
+            | _ -> failwith "Unsupported JSON value type"
+    
+        traverseElement jsObj ""
+        |> Map.ofSeq
