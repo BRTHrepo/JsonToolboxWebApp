@@ -1,8 +1,13 @@
-﻿
+﻿namespace JsonToolboxWebApp.JsonComparator
 
-module JsonToolboxWebApp.JsonComparator
-    open JsonToolboxWebApp.JsonTraverser
+
+open JsonToolboxWebApp.JsonTraverser
+open WebSharper // A WebSharper attribútumok használatához
+[<JavaScript>] 
+
+module JsonComparator =
     // Define the ComparisonResult type
+    open JsonToolboxWebApp.JsonTraverser
     type ComparisonResult = 
         { 
             same: bool

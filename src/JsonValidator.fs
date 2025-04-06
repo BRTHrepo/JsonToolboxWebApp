@@ -1,46 +1,33 @@
-﻿
-module JsonToolboxWebApp.JsonValidator
+﻿module JsonToolboxWebApp.JsonValidator
 
+open WebSharper
+open WebSharper.Json
 
-open System
-open System.Text.Json
-
-// Define the ValidationStatus type
-type ValidationStatus = 
-    | Valid 
+// ValidationStatus típus definiálása
+type ValidationStatus =
+    | Valid
     | Invalid
 
-// Define the ValidationResult type
-type ValidationResult = 
-    { 
-        status1: ValidationStatus 
-        status2: ValidationStatus 
-        json1Document: JsonDocument option 
-        json2Document: JsonDocument option 
-    }
+// ValidationResult típus definiálása
+type ValidationResult = {
+    status1: ValidationStatus
+    status2: ValidationStatus
+    json1Document: obj option
+    json2Document: obj option
+}
 
-// Function to validate a JSON string
-let validateJson (jsonString: string) : ValidationStatus * JsonDocument option =
-    try
-        let jsonDoc = JsonDocument.Parse(jsonString)
-        (Valid, Some jsonDoc)
-    with
-    | :? JsonException -> (Invalid, None)
+// Egy JSON szöveg validálása
+let validateJson (jsonString: string) : ValidationStatus * obj option =
+    try 
+        let jsonDoc = Json.Deserialize<obj>(jsonString)
+        Valid, Some jsonDoc
+    with _ -> Invalid, None
 
-// Function to validate two JSON strings and return a ValidationResult
+// Két JSON szöveg validálása és eredmény visszaadása
 let validateJsonFiles (json1: string) (json2: string) : ValidationResult =
     let status1, doc1 = validateJson json1
     let status2, doc2 = validateJson json2
-    {
-        status1 = status1
-        status2 = status2
-        json1Document = doc1
-        json2Document = doc2
-    }
+    
+    { status1 = status1; status2 = status2; json1Document = doc1; json2Document = doc2 }
 
-// Example usage
-let exampleJson1 = "{ \"key\": \"value\" }"
-let exampleJson2 = "{ \"key\": \"value2\" }"
-
-let result = validateJsonFiles exampleJson1 exampleJson2
 
