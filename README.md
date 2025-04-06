@@ -2,11 +2,11 @@
 
 ## Project Overview
 
-JsonToolboxWebApp is a web application designed to process, validate,
-and compare JSON files.
-Built with F# and WebSharper, the application provides a user-friendly interface for JSON analysis.
+JsonToolboxWebApp is a web application designed to process, validate, and compare JSON files. Built with F# and WebSharper, the application provides a user-friendly interface for JSON analysis.
 
----
+## Motivation
+
+The JsonToolboxWebApp was created to facilitate the comparison of JSON files and identify differences between them. The application serves as a foundation for further development, with potential features such as JSON editing, merging, and exporting comparison results for broader use cases.
 
 ## Features
 
@@ -25,43 +25,39 @@ Built with F# and WebSharper, the application provides a user-friendly interface
 
 ### 4. Customizable Output
 - Allows filtering of comparison results based on the `same` property:
-    - Show all results.
-    - Show only identical entries (`same = true`).
-    - Show only differing entries (`same = false`).
+   - Show all results.
+   - Show only identical entries (`same = true`).
+   - Show only differing entries (`same = false`).
 - Dynamically updates the output when the filter changes.
 
 ### 5. JavaScript Object Null Handling
 - Ensures that `null` values are not misclassified as objects during traversal.
 - Added explicit checks to correctly identify and process `null` values at all recursive levels.
 
----
-
 ## File Structure
 
 ### Key Files
 1. **JsonTraverser.fs**:
-    - Contains functions for parsing and traversing JSON files.
-    - Handles recursive navigation of objects and arrays.
+   - Contains functions for parsing and traversing JSON files using JavaScript's native `JSON.parse`.
+   - Handles recursive navigation of objects and arrays.
 
 2. **JsonComparator.fs**:
-    - Implements recursive comparison logic for JSON files.
-    - Defines types like `ComparisonResult` and `UnionDictionary`.
+   - Implements recursive comparison logic for JSON files.
+   - Defines types like `ComparisonResult` and `UnionDictionary`.
 
 3. **Client.fs**:
-    - Manages client-side functionality, including file input handling and dynamic UI updates.
-    - Integrates filtering logic for comparison results.
+   - Manages client-side functionality, including file input handling and dynamic UI updates.
+   - Integrates filtering logic for comparison results.
 
 4. **Main.fs**:
-    - Server-side entry point for the application.
-    - Handles routing, templates, and rendering.
+   - Server-side entry point for the application.
+   - Handles routing, templates, and rendering.
 
 5. **Main.html**:
-    - Defines the web interface with sections for file input, target selection, and comparison result display.
+   - Defines the web interface with sections for file input, target selection, and comparison result display.
 
 6. **wsconfig.json**:
-    - Configuration file specifying project settings (e.g., output directory).
-
----
+   - Configuration file specifying project settings (e.g., output directory).
 
 ## How It Works
 
@@ -83,23 +79,33 @@ The filtering logic dynamically adjusts the displayed results based on user sele
 - Filters by `same = true`, `same = false`, or shows all entries.
 - Updates output in real-time when the filter changes.
 
----
-
 ## Dependencies
 
 1. **WebSharper**:
-    - Provides tools for building reactive web applications in F#.
+   - Provides tools for building reactive web applications in F#.
 
 2. **JavaScript Native JSON Handling**:
-    - Uses JavaScript's native `JSON.parse` for parsing and processing JSON data directly in the browser environment.
+   - Uses JavaScript's native `JSON.parse` for parsing and processing JSON data directly in the browser environment.
 
 3. **FSharp.Formatting** (optional):
-    - Enables Markdown parsing for rendering documentation dynamically (if used).
-
----
+   - Enables Markdown parsing for rendering documentation dynamically (if used).
 
 ## Usage
 
 ### Installation
 1. Clone the repository:
 
+Access the live version of JsonToolboxWebApp here:  
+[JsonToolboxWebApp Live](https://brthrepo.github.io/JsonToolboxWebApp/index.html)
+
+## Notable Features Implemented
+
+1. **JavaScript Object Null Handling**:
+- Ensured that `null` values are not misclassified as objects during traversal.
+- Added explicit checks to correctly identify and process `null` values at all recursive levels.
+
+2. **Dynamic Filtering for Comparison Results**:
+- Integrated a dropdown menu (`filterSame`) to allow filtering results based on the `same` property.
+- Added real-time updates to displayed results when the filter changes (`OnChange` event listener).
+
+---
