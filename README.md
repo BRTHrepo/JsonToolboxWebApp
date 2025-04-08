@@ -2,76 +2,88 @@
 
 ## Project Overview
 
-JsonToolboxWebApp is a web application designed to process, validate, and compare JSON files. Built with F# and WebSharper, the application provides a user-friendly interface for JSON analysis.
+JsonToolboxWebApp is a web application designed to process, validate, and compare JSON files.
+Built with F# and WebSharper, the application provides a user-friendly interface for JSON analysis.
 
-## Screenshots
 
-### 1. Select File
-![Select File](images/selectFile.png)
-
-### 2. Select Target
-![Select Target](images/target.png)
-
-### 3. Select Filter
-![Select Filter](images/filter.png)
-
-### 4. Result Section
-![Result Section](images/result.png)
-
-### 5.  Key Search 
-
+---
 
 ## Motivation
-
-The JsonToolboxWebApp was created to facilitate the comparison of JSON files and identify differences between them. The application serves as a foundation for further development, with potential features such as JSON editing, merging, and exporting comparison results for broader use cases.
+The JsonToolboxWebApp was created to facilitate the comparison of JSON files and identify differences between them.
+The application serves as a foundation for further development, with potential features such as JSON editing,
+merging, and exporting comparison results for broader use cases.
 
 ## Features
 
-### 1. JSON Traverser
-- Recursively navigates through JSON structures.
-- Handles nested objects and arrays efficiently.
-
-### 2. JSON Validator
-- Validates the syntax and structure of JSON files.
-- Provides meaningful error messages for invalid JSON inputs.
-
-### 3. JSON Comparator
-- Compares two JSON files recursively.
-- Identifies differences in keys, values, and array sizes.
-- Outputs discrepancies in a structured format (`UnionDictionary`).
-
-### 4. Customizable Output
+### 1. Customizable Output
 - Allows filtering of comparison results based on the `same` property:
    - Show all results.
    - Show only identical entries (`same = true`).
    - Show only differing entries (`same = false`).
 - Dynamically updates the output when the filter changes.
 
-### 5. JavaScript Object Null Handling
-- Ensures that `null` values are not misclassified as objects during traversal.
-- Added explicit checks to correctly identify and process `null` values at all recursive levels.
+### 2. **Key Filter Search Feature**
+- Allows users to filter the comparison results by entering a specific key.
+- Displays only the comparison results related to the provided key.
+- Real-time updates to displayed results when the filter changes (`OnChange` event listener).
 
-### 6. Key Filter Search Feature
-
- Overview
-The Key Filter Search feature allows users to filter the comparison results by entering a specific key. If a key is provided, the application will display only the comparison results related to that key. This functionality ensures a more focused analysis of JSON differences.
-
- How It Works
-1. Enter a key in the "Search by Key" input field.
-2. The results will dynamically update to show only entries matching the provided key.
-3. If no key is entered, the default filtering (e.g., "Same", "Different", or "All") will apply.
-
- Example Use Case
-- **Scenario**: You have two large JSON files and want to compare only the values associated with the key `ticketTypes`.
-- **Steps**:
-   1. Enter `ticketTypes` in the search field.
-   2. View the filtered results showing only differences or similarities for `ticketTypes`.
-
- Notes
+#### Notes
 - The search is case-sensitive.
 - If the key does not exist in either of the JSON files, no results will be displayed.
 
 
+---
+## Screenshots
+
+### 1. Select File
+
+<img src="images/selectFile.png" alt="Select Filter" width="50%" height="50%">
+
+### 2. Select Target
+
+<img src="images/target.png" alt="Select Filter" width="50%" height="50%">
+
+### 3. Select Filter
+
+<img src="images/filter.png" alt="Select Filter" width="50%" height="50%">
+
+### 4. Result Section
+
+<img src="images/result.png" alt="Result Section" width="50%" height="50%">
+
+### 5.  Key Search
+
+<img src="images/byKey.png" alt="Select Filter" width="50%" height="50%">
+
+---
+
+
+## How It Works
+
+### 1. Validation
+The `traverseJsonDocument` function reads and parses JSON files using JavaScript's `JSON.parse`.
+Invalid files result in descriptive error messages.
+
+### 2. Traversing
+The `traverseElement` function recursively processes JSON structures:
+- Supports strings, numbers, booleans, arrays, objects, and `null`.
+- Ensures robust handling of edge cases like `null`.
+
+### 3. Comparison
+The `compareJsonValues` function compares two JSON structures recursively:
+- Identifies differences in keys, values, and array sizes.
+- Outputs results as a `UnionDictionary`.
+
+### 4. Filtering
+The filtering logic dynamically adjusts the displayed results based on user selection:
+- Filters by `same = true`, `same = false`, or shows all entries.
+- Updates output in real-time when the filter changes.
+- The Key Filter Search feature allows users to filter the comparison results by entering a specific key.
+- If a key is provided, the application will display only the comparison results related to that key.
+- This functionality ensures a more focused analysis of JSON differences.
+
+
+---
 
 ## File Structure
 
@@ -95,28 +107,12 @@ The Key Filter Search feature allows users to filter the comparison results by e
 5. **Main.html**:
    - Defines the web interface with sections for file input, target selection, and comparison result display.
 
-6. **wsconfig.json**:
+6. **Client.css**:
+    - Defines the CSS styles for the web interface.
+   
+7. **wsconfig.json**:
    - Configuration file specifying project settings (e.g., output directory).
 
-## How It Works
-
-### 1. Validation
-The `traverseJsonDocument` function reads and parses JSON files using JavaScript's `JSON.parse`. Invalid files result in descriptive error messages.
-
-### 2. Traversing
-The `traverseElement` function recursively processes JSON structures:
-- Supports strings, numbers, booleans, arrays, objects, and `null`.
-- Ensures robust handling of edge cases like `null`.
-
-### 3. Comparison
-The `compareJsonValues` function compares two JSON structures recursively:
-- Identifies differences in keys, values, and array sizes.
-- Outputs results as a `UnionDictionary`.
-
-### 4. Filtering
-The filtering logic dynamically adjusts the displayed results based on user selection:
-- Filters by `same = true`, `same = false`, or shows all entries.
-- Updates output in real-time when the filter changes.
 
 ## Dependencies
 
@@ -132,19 +128,9 @@ The filtering logic dynamically adjusts the displayed results based on user sele
 ## Usage
 
 ### Installation
-1. Clone the repository:
+1. Clone the repository: https://github.com/BRTHrepo/JsonToolboxWebApp
 
 Access the live version of JsonToolboxWebApp here:  
 [JsonToolboxWebApp Live](https://brthrepo.github.io/JsonToolboxWebApp/index.html)
-
-## Notable Features Implemented
-
-1. **JavaScript Object Null Handling**:
-- Ensured that `null` values are not misclassified as objects during traversal.
-- Added explicit checks to correctly identify and process `null` values at all recursive levels.
-
-2. **Dynamic Filtering for Comparison Results**:
-- Integrated a dropdown menu (`filterSame`) to allow filtering results based on the `same` property.
-- Added real-time updates to displayed results when the filter changes (`OnChange` event listener).
 
 ---

@@ -12,11 +12,20 @@ color: #333333;
 }
 
 .navbar {
-background-color: #007bff; /* Sötétkék navbar */
+background-color: #0000AA /* Sötétkék navbar */
 }
 
 .navbar-brand {
 color: #ffffff !important;
+}
+.navbar-nav > li > a {
+    font-weight: bold; /* Makes the text bold */
+    color: #000000; /* Sets the text color to white */
+    transition: color 0.3s ease; /* Smooth transition for hover effect */
+}
+
+.navbar-nav > li > a:hover {
+    color: #ffcc00; /* Changes the text color to yellow on hover */
 }
 
 .footer {
@@ -57,13 +66,7 @@ body {
     color: #333333;
 }
 
-.navbar {
-    background-color: #007bff; /* Sötétkék navbar */
-}
 
-.navbar-brand {
-    color: #ffffff !important;
-}
 
 .footer {
     position: absolute;
