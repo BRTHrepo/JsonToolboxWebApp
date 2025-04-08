@@ -19,6 +19,10 @@ module Client =
     let outputDiv2 = JS.Document.GetElementById("jsonOutput2")
     let comparisonResultDiv = JS.Document.GetElementById("comparisonResult")
     let filterSelect = JS.Document.GetElementById("filterSame") :?> HTMLSelectElement
+  
+    let keySearchInput = JS.Document.GetElementById("keySearchInput") :?> HTMLInputElement
+    
+               
     let CompareJsons jsonString1 jsonString2 =
         try
             // JSON stringek feldolgozása JsonValue típusra
@@ -41,7 +45,12 @@ module Client =
         | _ -> 
             // Ha a bemenet nem 1 vagy 2, akkor null-t ad vissza
             null
-    
+    let filterResultsByKey (results: Map<string, ComparisonResult>)  =
+        let key = if isNull keySearchInput.Value || keySearchInput.Value.Trim() = "" then None else Some(keySearchInput.Value.Trim())       
+        match key with
+        | Some k when not (isNull k) && k.Trim() <> "" -> //  String.IsNullOrWhiteSpace
+            results |> Map.filter (fun mapKey _ -> mapKey = k)
+        | _ -> results
     let filterResultsBySame (results: Map<string, ComparisonResult>) (filter: string) : Map<string, ComparisonResult> =
         match filter with
         | "true" -> results |> Map.filter (fun _ v -> v.same) // Csak azonosak
@@ -74,10 +83,12 @@ module Client =
                 Console.Log("Comparison completed.", result)
                 
                 let selectedFilter = filterSelect?value
-                            // Szűrt eredmények előállítása
+                // Szűrt eredmények előállítása
                 let filteredResult = filterResultsBySame result selectedFilter
+                // key szűrés
+                let filteredResultByKey = filterResultsByKey filteredResult 
                 // Formázott eredmény előállítása
-                let formattedResult = formatComparisonResult filteredResult
+                let formattedResult = formatComparisonResult filteredResultByKey
                 // Eredmény frissítése a HTML-ben
                 updateHtmlWithFormattedResult formattedResult
             else
@@ -111,7 +122,11 @@ module Client =
             Console.Log(sprintf "JSON Content: %s" result)
             return result
         }
-
+    // Eseménykezelő hozzáadása az input mező onchange eseményéhez
+    let initializeKeySearch () =
+        if not (isNull keySearchInput) then
+            keySearchInput.OnInput <- fun _ -> checkAllJsons()
+       
     let Main () =
         Console.Log("Main function called")
         let rvReversed = Var.Create "" 
@@ -122,6 +137,7 @@ module Client =
         // Eseménykezelés inicializálása a fájlválasztóhoz
         JS.Window.OnLoad <-
             fun _ ->
+                initializeKeySearch()
                 let fileInput = JS.Document.GetElementById(inputId)
                 if not (isNull filterSelect) then
                      filterSelect.OnChange <- fun _ -> checkAllJsons ()

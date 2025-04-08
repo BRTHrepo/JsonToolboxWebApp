@@ -18,6 +18,9 @@ JsonToolboxWebApp is a web application designed to process, validate, and compar
 ### 4. Result Section
 ![Result Section](images/result.png)
 
+### 5.  Key Search 
+
+
 ## Motivation
 
 The JsonToolboxWebApp was created to facilitate the comparison of JSON files and identify differences between them. The application serves as a foundation for further development, with potential features such as JSON editing, merging, and exporting comparison results for broader use cases.
@@ -47,6 +50,28 @@ The JsonToolboxWebApp was created to facilitate the comparison of JSON files and
 ### 5. JavaScript Object Null Handling
 - Ensures that `null` values are not misclassified as objects during traversal.
 - Added explicit checks to correctly identify and process `null` values at all recursive levels.
+
+### 6. Key Filter Search Feature
+
+ Overview
+The Key Filter Search feature allows users to filter the comparison results by entering a specific key. If a key is provided, the application will display only the comparison results related to that key. This functionality ensures a more focused analysis of JSON differences.
+
+ How It Works
+1. Enter a key in the "Search by Key" input field.
+2. The results will dynamically update to show only entries matching the provided key.
+3. If no key is entered, the default filtering (e.g., "Same", "Different", or "All") will apply.
+
+ Example Use Case
+- **Scenario**: You have two large JSON files and want to compare only the values associated with the key `ticketTypes`.
+- **Steps**:
+   1. Enter `ticketTypes` in the search field.
+   2. View the filtered results showing only differences or similarities for `ticketTypes`.
+
+ Notes
+- The search is case-sensitive.
+- If the key does not exist in either of the JSON files, no results will be displayed.
+
+
 
 ## File Structure
 
