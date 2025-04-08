@@ -11,72 +11,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&amp;display=swap" rel="stylesheet" />
     
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
-    <style>
-        html {
-            position: relative;
-            min-height: 100%;
-        }
+    <link rel="stylesheet" href="css/client.css" />
 
-        body {
-            margin-bottom: 60px;
-            font-family: 'Roboto', sans-serif;
-            background-color: #f0f8ff; /* Halvány kék háttér */
-            color: #333333;
-        }
-
-        .navbar {
-            background-color: #007bff; /* Sötétkék navbar */
-        }
-
-        .navbar-brand {
-            color: #ffffff !important;
-        }
-
-        .footer {
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            height: 60px;
-            background-color: #e9ecef; /* Világos szürke lábléc */
-            text-align: center;
-            padding-top: 20px;
-        }
-
-        .container .text-muted {
-            margin: 20px 0;
-        }
-
-        .card {
-            margin-bottom: 20px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        button,
-        a {
-            transition: background-color 0.3s ease;
-        }
-
-        button:hover {
-            background-color: #0056b3; /* Hover hatás gombokra */
-        }
-
-        pre {
-            max-height: 10em;
-            overflow-y: auto;
-            border: 1px solid #ccc;
-            padding: 10px;
-            background-color: #f9f9f9;
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                margin: 10px auto;
-                text-align: center;
-            }
-        }
-    </style>
 </head>
 
 <body>
@@ -119,6 +55,7 @@
 <p><img src="images/filter.png" alt="Select Filter" /></p>
 <h3>4. Result Section</h3>
 <p><img src="images/result.png" alt="Result Section" /></p>
+<h3>5.  Key Search</h3>
 <h2>Motivation</h2>
 <p>The JsonToolboxWebApp was created to facilitate the comparison of JSON files and identify differences between them. The application serves as a foundation for further development, with potential features such as JSON editing, merging, and exporting comparison results for broader use cases.</p>
 <h2>Features</h2>
@@ -155,6 +92,21 @@ Allows filtering of comparison results based on the <code>same</code> property:
 <li>Ensures that <code>null</code> values are not misclassified as objects during traversal.</li>
 <li>Added explicit checks to correctly identify and process <code>null</code> values at all recursive levels.</li>
 </ul>
+<h3>6. Key Filter Search Feature</h3>
+<p>Overview
+The Key Filter Search feature allows users to filter the comparison results by entering a specific key. If a key is provided, the application will display only the comparison results related to that key. This functionality ensures a more focused analysis of JSON differences.</p>
+<p>How It Works
+1. Enter a key in the "Search by Key" input field.
+2. The results will dynamically update to show only entries matching the provided key.
+3. If no key is entered, the default filtering (e.g., "Same", "Different", or "All") will apply.</p>
+<p>Example Use Case
+- <strong>Scenario</strong>: You have two large JSON files and want to compare only the values associated with the key <code>ticketTypes</code>.
+- <strong>Steps</strong>:
+1. Enter <code>ticketTypes</code> in the search field.
+2. View the filtered results showing only differences or similarities for <code>ticketTypes</code>.</p>
+<p>Notes
+- The search is case-sensitive.
+- If the key does not exist in either of the JSON files, no results will be displayed.</p>
 <h2>File Structure</h2>
 <h3>Key Files</h3>
 <ol>
@@ -294,18 +246,23 @@ Allows filtering of comparison results based on the <code>same</code> property:
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
 <div style="display:none" ws-children-template="MainForm"><div>
-            
-            <h4>Select a JSON File</h4>
-            <input type="file" id="fileInput" accept=".json" />
-            <hr />
+
+            <div class="input-row">
+                <div>
+                    <label for="fileInput" class="custom-file-label">Tallózás...</label>
+                    <input type="file" id="fileInput" accept=".json" />
+                </div>
+                <div>
+                    <label for="jsonTarget">Select Target:</label>
+                    <select id="jsonTarget" a="">
+                        <option value="json1">JSON 1</option>
+                        <option value="json2">JSON 2</option>
+                    </select>
+                </div>
+            </div>
 
             
-            <h4>Select Target:</h4>
-            <label for="jsonTarget">Choose target:</label>
-            <select id="jsonTarget" class="form-control">
-                <option value="json1">JSON 1</option>
-                <option value="json2">JSON 2</option>
-            </select>
+
             <hr />
 
             
@@ -333,7 +290,12 @@ Allows filtering of comparison results based on the <code>same</code> property:
             </div>
 
             
-            <h3>Result:</h3>
+            <div class="results-container">
+                <h3>Result:</h3>
+                <label for="keySearchInput">Search by Key</label>
+                <input type="text" id="keySearchInput" class="form-control" placeholder="Enter key to search" />
+            </div>
+
             <pre id="comparisonResult"></pre>
 
         </div></div></body>

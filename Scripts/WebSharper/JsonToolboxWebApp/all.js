@@ -91,6 +91,7 @@ export function Main(){
     rvReversed.Set(newValue);
   };
   globalThis.onload=() => {
+    initializeKeySearch();
     const fileInput=globalThis.document.getElementById(inputId());
     if(!(filterSelect()==null))filterSelect().onchange=() => checkAllJsons();
     return!Equals(fileInput, null)?void(fileInput.onchange=() => {
@@ -127,6 +128,9 @@ export function Main(){
   let _1=(b.i=i,i);
   return _1.Doc;
 }
+function initializeKeySearch(){
+  if(!(keySearchInput()==null))keySearchInput().oninput=() => checkAllJsons();
+}
 function inputId(){
   return _c_2.inputId;
 }
@@ -142,7 +146,7 @@ function checkAllJsons(){
     if(!(json1Content==null)&&!(json2Content==null)&&!(json1Content.length===0)&&!(json2Content.length===0)){
       const result=CompareJsons(json1Content, json2Content);
       console.log("Comparison completed.", result);
-      updateHtmlWithFormattedResult(formatComparisonResult(filterResultsBySame(result, filterSelect().value)));
+      updateHtmlWithFormattedResult(formatComparisonResult(filterResultsByKey(filterResultsBySame(result, filterSelect().value))));
     }
     else updateHtmlWithFormattedResult("One or both JSON contents are missing.");
   }
@@ -169,6 +173,9 @@ function outputDiv1(){
 function outputDiv2(){
   return _c_2.outputDiv2;
 }
+function keySearchInput(){
+  return _c_2.keySearchInput;
+}
 function getOutputDivTextContent(id){
   return id===1?outputDiv1()==null?null:outputDiv1().textContent:id===2?outputDiv2()==null?null:outputDiv2().textContent:null;
 }
@@ -186,6 +193,18 @@ function updateHtmlWithFormattedResult(formattedResult){
 }
 function formatComparisonResult(dictionary){
   return Fold((_1, _2, _3) => _1+("\nKey: "+toSafe(_2)+"\n  "+toSafe("Same: "+String(_3.same))+"\n  "+toSafe("JSON1 Value: "+Printer_JsonValue(_3.json1Value))+"\n  "+toSafe("JSON2 Value: "+Printer_JsonValue(_3.json2Value))+"\n"), "", dictionary);
+}
+function filterResultsByKey(results){
+  const key=keySearchInput().value==null||Trim(keySearchInput().value)==""?null:Some(Trim(keySearchInput().value));
+  if(key!=null&&key.$==1){
+    const k=key.$0;
+    if(!(k==null)&&Trim(k)!=""){
+      const k_1=key.$0;
+      return Filter((_1) => _1==k_1, results);
+    }
+    else return results;
+  }
+  else return results;
 }
 function filterResultsBySame(results, filter_2){
   return filter_2=="true"?Filter((_1, _2) => _2.same, results):filter_2=="false"?Filter((_1, _2) =>!_2.same, results):results;
@@ -858,6 +877,7 @@ let _c_2=Lazy((_i) => class $StartupCode_Client {
   static {
     _c_2=_i(this);
   }
+  static keySearchInput;
   static filterSelect;
   static comparisonResultDiv;
   static outputDiv2;
@@ -869,6 +889,7 @@ let _c_2=Lazy((_i) => class $StartupCode_Client {
     this.outputDiv2=globalThis.document.getElementById("jsonOutput2");
     this.comparisonResultDiv=globalThis.document.getElementById("comparisonResult");
     this.filterSelect=globalThis.document.getElementById("filterSame");
+    this.keySearchInput=globalThis.document.getElementById("keySearchInput");
   }
 });
 function Delay(mk){
@@ -2652,6 +2673,33 @@ class Pair {
     return Create_1(Pair, {Key:Key, Value:Value_1});
   }
 }
+function Trim(s){
+  return s.replace(new RegExp("^\\s+"), "").replace(new RegExp("\\s+$"), "");
+}
+function concat_2(separator, strings){
+  return ofSeq(strings).join(separator);
+}
+function SplitChars(s, sep, opts){
+  return Split(s, new RegExp("["+RegexEscape(sep.join(""))+"]"), opts);
+}
+function StartsWith(t, s){
+  return t.substring(0, s.length)==s;
+}
+function Split(s, pat, opts){
+  return opts===1?filter_1((x) => x!=="", SplitWith(s, pat)):SplitWith(s, pat);
+}
+function RegexEscape(s){
+  return s.replace(new RegExp("[-\\/\\\\^$*+?.()|[\\]{}]", "g"), "\\$&");
+}
+function SplitWith(str, pat){
+  return str.split(pat);
+}
+function forall_2(f, s){
+  return forall(f, protect(s));
+}
+function protect(s){
+  return s==null?"":s;
+}
 class Scheduler extends Object_1 {
   idle;
   robin;
@@ -2808,30 +2856,6 @@ class FSharpList {
       return m.$==0?false:(e.c=m.$0,e.s=m.$1,true);
     }, void 0);
   }
-}
-function concat_2(separator, strings){
-  return ofSeq(strings).join(separator);
-}
-function SplitChars(s, sep, opts){
-  return Split(s, new RegExp("["+RegexEscape(sep.join(""))+"]"), opts);
-}
-function StartsWith(t, s){
-  return t.substring(0, s.length)==s;
-}
-function Split(s, pat, opts){
-  return opts===1?filter_1((x) => x!=="", SplitWith(s, pat)):SplitWith(s, pat);
-}
-function RegexEscape(s){
-  return s.replace(new RegExp("[-\\/\\\\^$*+?.()|[\\]{}]", "g"), "\\$&");
-}
-function SplitWith(str, pat){
-  return str.split(pat);
-}
-function forall_2(f, s){
-  return forall(f, protect(s));
-}
-function protect(s){
-  return s==null?"":s;
 }
 class OperationCanceledException extends Error {
   ct;
