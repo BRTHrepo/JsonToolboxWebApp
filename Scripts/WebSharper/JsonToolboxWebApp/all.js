@@ -194,20 +194,20 @@ function updateHtmlWithFormattedResult(formattedResult){
 function formatComparisonResult(dictionary){
   return Fold((_1, _2, _3) => _1+("\nKey: "+toSafe(_2)+"\n  "+toSafe("Same: "+String(_3.same))+"\n  "+toSafe("JSON1 Value: "+Printer_JsonValue(_3.json1Value))+"\n  "+toSafe("JSON2 Value: "+Printer_JsonValue(_3.json2Value))+"\n"), "", dictionary);
 }
-function filterResultsByKey(results){
+function filterResultsByKey(map_2){
   const key=keySearchInput().value==null||Trim(keySearchInput().value)==""?null:Some(Trim(keySearchInput().value));
   if(key!=null&&key.$==1){
-    const k=key.$0;
-    if(!(k==null)&&Trim(k)!=""){
-      const k_1=key.$0;
-      return Filter((_1) => _1==k_1, results);
+    const filterString=key.$0;
+    if(!(filterString==null)&&Trim(filterString)!=""){
+      const filterString_1=key.$0;
+      return Filter((_1) => _1.indexOf(filterString_1)!=-1, map_2);
     }
-    else return results;
+    else return map_2;
   }
-  else return results;
+  else return map_2;
 }
-function filterResultsBySame(results, filter_2){
-  return filter_2=="true"?Filter((_1, _2) => _2.same, results):filter_2=="false"?Filter((_1, _2) =>!_2.same, results):results;
+function filterResultsBySame(map_2, filter_2){
+  return filter_2=="true"?Filter((_1, _2) => _2.same, map_2):filter_2=="false"?Filter((_1, _2) =>!_2.same, map_2):map_2;
 }
 function comparisonResultDiv(){
   return _c_2.comparisonResultDiv;

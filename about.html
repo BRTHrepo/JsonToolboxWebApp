@@ -68,7 +68,8 @@ Allows filtering of comparison results based on the <code>same</code> property:
 <h3>2. <strong>Key Filter Search Feature</strong></h3>
 <ul>
 <li>Allows users to filter the comparison results by entering a specific key.</li>
-<li>Displays only the comparison results related to the provided key.</li>
+<li>The Key Filter Search feature allows users to filter the comparison results by entering a specific key or substring.</li>
+<li>If the input field contains a valid string, the application filters the results to include only entries where the key contains the provided substring.</li>
 <li>Real-time updates to displayed results when the filter changes (<code>OnChange</code> event listener).</li>
 </ul>
 <h4>Notes</h4>
@@ -105,8 +106,7 @@ Invalid files result in descriptive error messages.</p>
 <p>The filtering logic dynamically adjusts the displayed results based on user selection:
 - Filters by <code>same = true</code>, <code>same = false</code>, or shows all entries.
 - Updates output in real-time when the filter changes.
-- The Key Filter Search feature allows users to filter the comparison results by entering a specific key.
-- If a key is provided, the application will display only the comparison results related to that key.
+- The Key Filter Search feature allows users to filter the comparison results by checking if the key contains the provided substring.
 - This functionality ensures a more focused analysis of JSON differences.</p>
 <hr />
 <h2>File Structure</h2>
