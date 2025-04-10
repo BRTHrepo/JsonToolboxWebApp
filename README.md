@@ -24,7 +24,8 @@ merging, and exporting comparison results for broader use cases.
 
 ### 2. **Key Filter Search Feature**
 - Allows users to filter the comparison results by entering a specific key.
-- Displays only the comparison results related to the provided key.
+- The Key Filter Search feature allows users to filter the comparison results by entering a specific key or substring.
+- If the input field contains a valid string, the application filters the results to include only entries where the key contains the provided substring.
 - Real-time updates to displayed results when the filter changes (`OnChange` event listener).
 
 #### Notes
@@ -78,8 +79,7 @@ The `compareJsonValues` function compares two JSON structures recursively:
 The filtering logic dynamically adjusts the displayed results based on user selection:
 - Filters by `same = true`, `same = false`, or shows all entries.
 - Updates output in real-time when the filter changes.
-- The Key Filter Search feature allows users to filter the comparison results by entering a specific key.
-- If a key is provided, the application will display only the comparison results related to that key.
+- The Key Filter Search feature allows users to filter the comparison results by checking if the key contains the provided substring.
 - This functionality ensures a more focused analysis of JSON differences.
 
 
