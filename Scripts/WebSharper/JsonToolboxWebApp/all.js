@@ -1127,7 +1127,7 @@ function compareJsonDictionaries(dict1, dict2){
     const _1=dict1.TryFind(key);
     const _2=dict2.TryFind(key);
     return _1==null?_2==null?compareJsonValues(key, Null, Null):compareJsonValues(key, Null, _2.$0):_2==null?compareJsonValues(key, _1.$0, Null):compareJsonValues(key, _1.$0, _2.$0);
-  }, ofSeq_1(new FSharpSet("New_1", OfSeq(append_1(ofSeq_1(dict1.Keys), ofSeq_1(dict2.Keys))))))));
+  }, ofSeq_1(new FSharpSet("New_1", OfSeq(append(new FSharpSet("New_1", OfSeq(dict1.Keys)), new FSharpSet("New_1", OfSeq(dict2.Keys)))))))));
 }
 function compareJsonValues(path, value1, value2){
   let _1;
@@ -2513,31 +2513,6 @@ function ofArray(arr){
   let r=FSharpList.Empty;
   for(let i=length(arr)-1, _1=0;i>=_1;i--)r=FSharpList.Cons(get(arr, i), r);
   return r;
-}
-function append_1(x, y){
-  let r;
-  let l;
-  let go;
-  if(x.$==0)return y;
-  else if(y.$==0)return x;
-  else {
-    const res=Create_1(FSharpList, {$:1});
-    r=res;
-    l=x;
-    go=true;
-    while(go)
-      {
-        r.$0=l.$0;
-        l=l.$1;
-        if(l.$==0)go=false;
-        else {
-          const t=Create_1(FSharpList, {$:1});
-          r=(r.$1=t,t);
-        }
-      }
-    r.$1=y;
-    return res;
-  }
 }
 function length_1(l){
   let r=l;

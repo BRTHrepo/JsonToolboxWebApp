@@ -136,8 +136,7 @@ select {
         gap: 10px; /* Kisebb távolság az elemek között */
         width: 100%; /* Teljes szélesség kihasználása kisebb képernyőkön */
         align-items: flex-start; /* Balra igazítás reszponzívan */
-        justify-content:center
-
+        justify-content:center; 
     }
 }
 
