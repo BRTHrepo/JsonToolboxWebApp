@@ -4,6 +4,7 @@ open JsonToolboxWebApp.JsonComparator.JsonComparator
 open JsonToolboxWebApp.JsonTraverser
 open WebSharper
 open WebSharper.JavaScript
+open WebSharper.JavaScript.Dom
 open WebSharper.UI
 open WebSharper.UI.Notation
 open WebSharper.UI.Templating
@@ -16,14 +17,26 @@ module Templates =
 module Client =
 
     let inputId = "fileInput"
-    let outputDiv1 = JS.Document.GetElementById("jsonOutput1")
-    let outputDiv2 = JS.Document.GetElementById("jsonOutput2")
+    let outputDiv1Id = "jsonOutput1"
+    let outputDiv2Id = "jsonOutput2"
     let comparisonResultDiv = JS.Document.GetElementById("comparisonResult")
     let filterSelect = JS.Document.GetElementById("filterSame") :?> HTMLSelectElement
     
     let keySearchInput =
         JS.Document.GetElementById("keySearchInput") :?> HTMLInputElement
-    
+   
+    /// <summary>
+    ///    Gets an element by id, if it doesn't exist, returns None
+    /// </summary>
+    /// <param name="id"> Element id </param>
+    /// <returns> Element if found, otherwise None </returns> 
+    let getElementByIdOpt (id: string) : Option<Element> =
+        match JS.Document.GetElementById(id) with
+        | null -> None
+        | element -> Some element
+        
+    let outputDiv1 = getElementByIdOpt (outputDiv1Id)
+    let outputDiv2 = getElementByIdOpt (outputDiv2Id)
     
     /// <summary>
     ///    Compares two JSON strings and returns a map of comparison results
@@ -52,15 +65,19 @@ module Client =
     let getOutputDivTextContent (id: int) =
         // A bemeneti id alapján visszaadja a megfelelő output div szövegét
         match id with
-        | 1 -> if isNull outputDiv1 then null else outputDiv1.TextContent
-        | 2 -> if isNull outputDiv2 then null else outputDiv2.TextContent
+        | 1 ->  match  outputDiv1 with
+                | Some div -> div.TextContent
+                | None -> null
+        | 2 ->  match outputDiv2 with
+                | Some div -> div.TextContent
+                | None -> null
         | _ ->
             // Ha a bemenet nem 1 vagy 2, akkor null-t ad vissza
             null
 
-
+    // Not used
     /// <summary>
-    ///   English : Filtering by key, exact match
+    ///   English : Filtering by key, exact match 
     /// </summary>
     /// <param name="results"></param>
     /// <returns> Filtered results </returns>
@@ -238,38 +255,37 @@ module Client =
                                         // A legördülő menü (select) aktuális értékének lekérése
 
                                         let! jsonContent = ReadJsonFromInput(file)
-
+                                        // try to parse the JSON content for validation ,
+                                        // if it's not valid, it will throw an exception
                                         let jsonDocument = Json.Deserialize<Object>(jsonContent)
-                                        Console.Log(sprintf "jsonContent: %s" jsonContent)
-
+                                     
                                         match selectedValue with
                                         | "json1" ->
-                                            // let outputDiv1 = JS.Document.GetElementById("jsonOutput1")
-                                            outputDiv1.TextContent <- jsonContent
-                                            updateReversed "Json1 content loaded"
-                                        // JsonDocument létrehozása
+                                            match  outputDiv1 with
+                                            | Some div -> div.TextContent <- jsonContent
+                                                          updateReversed "Json1 content loaded"   
+                                            | None ->  updateReversed("No output div found.")                                                        
                                         | "json2" ->
-                                            // let outputDiv2 = JS.Document.GetElementById("jsonOutput2")
-                                            outputDiv2.TextContent <- jsonContent
-                                            updateReversed "Json2 content loaded"
+                                            match  outputDiv2 with
+                                            | Some div -> div.TextContent <- jsonContent
+                                                          updateReversed "Json2 content loaded"   
+                                            | None ->  updateReversed("No output div found.")                      
                                         | _ ->
                                             updateReversed "Invalid selection in dropdown."
                                             Console.Log("Invalid selection in dropdown.")
-
                                         checkAllJsons ()
                                     with ex ->
-                                        updateReversed (sprintf "Error in Json (if it is a real json): %s" ex.Message)
-                                        Console.Log(sprintf "Error in Main: %s" ex.Message)
-
                                         match selectedValue with
                                         | "json1" ->
-                                            // let outputDiv1 = JS.Document.GetElementById("jsonOutput1")
-                                            outputDiv1.TextContent <- sprintf "Error: %s" ex.Message
+                                            match outputDiv1 with
+                                            | Some div -> div.TextContent <- sprintf "Error: %s" ex.Message
+                                            | None -> updateReversed (sprintf "No output div found. Error in Json (if it is a real json): %s" ex.Message)
                                         // JsonDocument létrehozása
                                         | "json2" ->
-                                            // let outputDiv2 = JS.Document.GetElementById("jsonOutput2")
-                                            outputDiv2.TextContent <- sprintf "Error: %s" ex.Message
-                                        | _ -> Console.Log("Invalid selection in dropdown.")
+                                            match outputDiv2 with
+                                            | Some div -> div.TextContent <- sprintf "Error: %s" ex.Message
+                                            | None -> updateReversed (sprintf "No output div found. Error in Json (if it is a real json): %s" ex.Message)
+                                        | _ -> updateReversed ("Invalid selection in dropdown.")
                                 }
                                 |> Async.Start
 
