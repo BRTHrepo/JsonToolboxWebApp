@@ -145,7 +145,8 @@ module JsonComparator =
     /// detailed analysis of their content.
     /// </remarks>
     let compareJsonDictionaries (dict1: Map<string, JsonValue>) (dict2: Map<string, JsonValue>) : UnionDictionary =
-        let allKeys = List.ofSeq dict1.Keys @ List.ofSeq dict2.Keys |> Set.ofSeq |> Set.toList
+        //let allKeys = List.ofSeq dict1.Keys @ List.ofSeq dict2.Keys |> Set.ofSeq |> Set.toList
+        let allKeys =    Set.union (Set.ofSeq dict1.Keys) (Set.ofSeq dict2.Keys) |> Set.toList
         let baseResults =
             allKeys
             |> List.collect (fun key ->
@@ -156,6 +157,6 @@ module JsonComparator =
                 | (Some v1, None) -> compareJsonValues key v1 Null
                 | (None, Some v2) -> compareJsonValues key Null v2
                 | (None, None) -> compareJsonValues key Null Null
-                | _ -> [])
+                )
         baseResults |> Map.ofSeq
 
