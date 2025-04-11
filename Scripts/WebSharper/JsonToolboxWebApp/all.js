@@ -105,17 +105,12 @@ export function Main(){
             console.log("file name: "+toSafe(file.name));
             return Bind(ReadJsonFromInput(file), (a) => {
               JSON.parse(a);
-              console.log("jsonContent: "+toSafe(a));
-              return Combine(selectedValue=="json1"?(outputDiv1().textContent=a,updateReversed("Json1 content loaded"),Zero()):selectedValue=="json2"?(outputDiv2().textContent=a,updateReversed("Json2 content loaded"),Zero()):(updateReversed("Invalid selection in dropdown."),console.log("Invalid selection in dropdown."),Zero()), Delay(() => {
+              return Combine(selectedValue=="json1"?outputDiv1()==null?(updateReversed("No output div found."),Zero()):(outputDiv1().$0.textContent=a,updateReversed("Json1 content loaded"),Zero()):selectedValue=="json2"?outputDiv2()==null?(updateReversed("No output div found."),Zero()):(outputDiv2().$0.textContent=a,updateReversed("Json2 content loaded"),Zero()):(updateReversed("Invalid selection in dropdown."),console.log("Invalid selection in dropdown."),Zero()), Delay(() => {
                 checkAllJsons();
                 return Zero();
               }));
             });
-          }), (a) => {
-            updateReversed("Error in Json (if it is a real json): "+toSafe(a.message));
-            console.log("Error in Main: "+toSafe(a.message));
-            return selectedValue=="json1"?(outputDiv1().textContent="Error: "+toSafe(a.message),Zero()):selectedValue=="json2"?(outputDiv2().textContent="Error: "+toSafe(a.message),Zero()):(console.log("Invalid selection in dropdown."),Zero());
-          });
+          }), (a) => selectedValue=="json1"?outputDiv1()==null?(updateReversed("No output div found. Error in Json (if it is a real json): "+toSafe(a.message)),Zero()):(outputDiv1().$0.textContent="Error: "+toSafe(a.message),Zero()):selectedValue=="json2"?outputDiv2()==null?(updateReversed("No output div found. Error in Json (if it is a real json): "+toSafe(a.message)),Zero()):(outputDiv2().$0.textContent="Error: "+toSafe(a.message),Zero()):(updateReversed("Invalid selection in dropdown."),Zero()));
         }), null);
       }
     }):null;
@@ -177,7 +172,7 @@ function keySearchInput(){
   return _c_2.keySearchInput;
 }
 function getOutputDivTextContent(id){
-  return id===1?outputDiv1()==null?null:outputDiv1().textContent:id===2?outputDiv2()==null?null:outputDiv2().textContent:null;
+  return id===1?outputDiv1()==null?null:outputDiv1().$0.textContent:id===2?outputDiv2()==null?null:outputDiv2().$0.textContent:null;
 }
 function CompareJsons(jsonString1, jsonString2){
   try {
@@ -208,6 +203,16 @@ function filterResultsByKey(map_2){
 }
 function filterResultsBySame(map_2, filter_2){
   return filter_2=="true"?Filter((_1, _2) => _2.same, map_2):filter_2=="false"?Filter((_1, _2) =>!_2.same, map_2):map_2;
+}
+function getElementByIdOpt(id){
+  const m=globalThis.document.getElementById(id);
+  return Equals(m, null)?null:Some(m);
+}
+function outputDiv1Id(){
+  return _c_2.outputDiv1Id;
+}
+function outputDiv2Id(){
+  return _c_2.outputDiv2Id;
 }
 function comparisonResultDiv(){
   return _c_2.comparisonResultDiv;
@@ -877,19 +882,23 @@ let _c_2=Lazy((_i) => class $StartupCode_Client {
   static {
     _c_2=_i(this);
   }
+  static outputDiv2;
+  static outputDiv1;
   static keySearchInput;
   static filterSelect;
   static comparisonResultDiv;
-  static outputDiv2;
-  static outputDiv1;
+  static outputDiv2Id;
+  static outputDiv1Id;
   static inputId;
   static {
     this.inputId="fileInput";
-    this.outputDiv1=globalThis.document.getElementById("jsonOutput1");
-    this.outputDiv2=globalThis.document.getElementById("jsonOutput2");
+    this.outputDiv1Id="jsonOutput1";
+    this.outputDiv2Id="jsonOutput2";
     this.comparisonResultDiv=globalThis.document.getElementById("comparisonResult");
     this.filterSelect=globalThis.document.getElementById("filterSame");
     this.keySearchInput=globalThis.document.getElementById("keySearchInput");
+    this.outputDiv1=getElementByIdOpt(outputDiv1Id());
+    this.outputDiv2=getElementByIdOpt(outputDiv2Id());
   }
 });
 function Delay(mk){

@@ -10,7 +10,7 @@ font-family: 'Roboto', sans-serif;
 background-color: #f0f8ff; /* Halvány kék háttér */
 color: #333333;
 }
-
+/* --- Navbar --- */
 .navbar {
 background-color: #0000AA /* Sötétkék navbar */
 }
@@ -27,7 +27,7 @@ color: #ffffff !important;
 .navbar-nav > li > a:hover {
     color: #ffcc00; /* Changes the text color to yellow on hover */
 }
-
+/* --- Footer --- */
 .footer {
 position: absolute;
 bottom: 0;
@@ -37,7 +37,7 @@ background-color: #e9ecef; /* Világos szürke lábléc */
 text-align: center;
 padding-top: 20px;
 }
-
+/* --- Content Area --- */
 .container .text-muted {
 margin: 20px 0;
 }
@@ -48,56 +48,16 @@ border: 1px solid #ccc;
 border-radius: 5px;
 box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
-
+/* --- Interactive Elements --- */
 button,
 a {
 transition: background-color 0.3s ease;
 }
 
-html {
-    position: relative;
-    min-height: 100%;
-}
-
-body {
-    margin-bottom: 60px;
-    font-family: 'Roboto', sans-serif;
-    background-color: #f0f8ff; /* Halvány kék háttér */
-    color: #333333;
-}
-
-
-
-.footer {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    height: 60px;
-    background-color: #e9ecef; /* Világos szürke lábléc */
-    text-align: center;
-    padding-top: 20px;
-}
-
-.container .text-muted {
-    margin: 20px 0;
-}
-
-.card {
-    margin-bottom: 20px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-button,
-a {
-    transition: background-color 0.3s ease;
-}
-
 button:hover {
     background-color: #0056b3; /* Hover hatás gombokra */
 }
-
+/* --- JSON Output & Results --- */
 pre {
     max-height: 10em;
     overflow-y: auto;
@@ -105,12 +65,14 @@ pre {
     padding: 10px;
     background-color: #f9f9f9;
 }
-
-@media (max-width: 480px) {
-    .container {
-        margin: 10px auto;
-        text-align: center;
-    }
+.response-jumbotron {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-height: 2em;
+    border: 1px solid #ccc;
+    padding: 5px;
+    margin-bottom: 15px;
 }
 
 /* Results container styling */
@@ -166,7 +128,7 @@ select {
     border-radius: 5px;
     border: 1px solid #ccc;
 }
-
+/* --- Responsive Design --- */
 /* Reszponzív elrendezés kisebb képernyőkre */
 @media (max-width: 480px) {
     .input-row {
@@ -178,3 +140,5 @@ select {
 
     }
 }
+
+
