@@ -22,10 +22,7 @@ module Client =
     let comparisonResultDiv = JS.Document.GetElementById("comparisonResult")
     let filterSelect = JS.Document.GetElementById("filterSame") :?> HTMLSelectElement
     
-    let keySearchInput =
-        JS.Document.GetElementById("keySearchInput") :?> HTMLInputElement
-   
-    /// <summary>
+        /// <summary>
     ///    Gets an element by id, if it doesn't exist, returns None
     /// </summary>
     /// <param name="id"> Element id </param>
@@ -34,6 +31,27 @@ module Client =
         match JS.Document.GetElementById(id) with
         | null -> None
         | element -> Some element
+        
+      // Modal tartalom frissítése és megnyitása
+    let ShowJsonInModal (jsonContent: string) =
+        let modalContent = JS.Document.GetElementById("formattedJson")
+        modalContent.TextContent <- jsonContent // Modal tartalom frissítése
+
+        let modal = JS.Document.QuerySelector("#jsonModal")
+        modal?classList?add("show") // Bootstrap modal megnyitása
+        modal?style?display <- "block"
+        modal?("show")
+        modal?focus()
+    // Modal bezárása
+    let HideJsonModal () =
+        let modal = JS.Document.QuerySelector("#jsonModal")
+        modal?classList?remove("show") // Bootstrap modal bezárása
+        modal?style?display <- "none"
+        
+    let keySearchInput =
+        JS.Document.GetElementById("keySearchInput") :?> HTMLInputElement
+   
+
         
     let outputDiv1 = getElementByIdOpt (outputDiv1Id)
     let outputDiv2 = getElementByIdOpt (outputDiv2Id)
@@ -234,59 +252,70 @@ module Client =
             fun _ ->
                 initializeKeySearch ()
                 let fileInput = JS.Document.GetElementById(inputId)
-
+                
                 if not (isNull filterSelect) then
                     filterSelect.OnChange <- fun _ -> checkAllJsons ()
 
                 if fileInput <> null then
                     fileInput?onchange <-
                         fun _ ->
+                            let buttonShowModal1 =  JS.Document.GetElementById("showJson1Modal") |> unbox<HTMLButtonElement>
+                            buttonShowModal1.AddEventListener ("click", fun (ev: Event) -> ShowJsonInModal (getOutputDivTextContent 1)  )
+                            
+                            let buttonShowModal2 = getElementByIdOpt ("showJson2Modal")
+                            match buttonShowModal2 with
+                            | Some button ->
+                                button.AddEventListener ("click", fun (ev: Event) -> ShowJsonInModal (getOutputDivTextContent 2)  )
+                            | None ->  ()                            
+                        
+                            let hideModal = JS.Document.GetElementById("closeModal")
+                            hideModal.AddEventListener ("click", fun (ev: Event) -> HideJsonModal () )
+                            let hideModal1 = JS.Document.GetElementById("closeModal1")
+                            hideModal1.AddEventListener ("click", fun (ev: Event) -> HideJsonModal () )
                             let files = fileInput?files |> unbox<FileList>
-
                             if files.Length > 0 then
                                 let file = files.[0]
-
                                 async {
-                                    let dropdown = JS.Document.GetElementById("jsonTarget") :?> HTMLSelectElement
-                                    let selectedValue = dropdown?value // A 'value' mezőt dinamikus hozzáféréssel érjük el
+                                        let dropdown = JS.Document.GetElementById("jsonTarget") :?> HTMLSelectElement
+                                        let selectedValue = dropdown?value // A 'value' mezőt dinamikus hozzáféréssel érjük el
 
-                                    try
-                                        Console.Log(sprintf "file name: %s" file.Name)
-                                        // A legördülő menü (select) aktuális értékének lekérése
+                                        try
+                                            Console.Log(sprintf "file name: %s" file.Name)
+                                            // A legördülő menü (select) aktuális értékének lekérése
 
-                                        let! jsonContent = ReadJsonFromInput(file)
-                                        // try to parse the JSON content for validation ,
-                                        // if it's not valid, it will throw an exception
-                                        let jsonDocument = Json.Deserialize<Object>(jsonContent)
-                                     
-                                        match selectedValue with
-                                        | "json1" ->
-                                            match  outputDiv1 with
-                                            | Some div -> div.TextContent <- jsonContent
-                                                          updateReversed "Json1 content loaded"   
-                                            | None ->  updateReversed("No output div found.")                                                        
-                                        | "json2" ->
-                                            match  outputDiv2 with
-                                            | Some div -> div.TextContent <- jsonContent
-                                                          updateReversed "Json2 content loaded"   
-                                            | None ->  updateReversed("No output div found.")                      
-                                        | _ ->
-                                            updateReversed "Invalid selection in dropdown."
-                                            Console.Log("Invalid selection in dropdown.")
-                                        checkAllJsons ()
-                                    with ex ->
-                                        match selectedValue with
-                                        | "json1" ->
-                                            match outputDiv1 with
-                                            | Some div -> div.TextContent <- sprintf "Error: %s" ex.Message
-                                            | None -> updateReversed (sprintf "No output div found. Error in Json (if it is a real json): %s" ex.Message)
-                                        // JsonDocument létrehozása
-                                        | "json2" ->
-                                            match outputDiv2 with
-                                            | Some div -> div.TextContent <- sprintf "Error: %s" ex.Message
-                                            | None -> updateReversed (sprintf "No output div found. Error in Json (if it is a real json): %s" ex.Message)
-                                        | _ -> updateReversed ("Invalid selection in dropdown.")
-                                }
+                                            let! jsonContent = ReadJsonFromInput(file)
+                                            // try to parse the JSON content for validation ,
+                                            // if it's not valid, it will throw an exception
+                                            let jsonDocument = Json.Deserialize<Object>(jsonContent)
+                                         
+                                            match selectedValue with
+                                            | "json1" ->
+                                                match  outputDiv1 with
+                                                | Some div -> div.TextContent <- jsonContent
+                                                              updateReversed "Json1 content loaded"   
+                                                | None ->  updateReversed("No output div found.")                                                        
+                                            | "json2" ->
+                                                match  outputDiv2 with
+                                                | Some div -> div.TextContent <- jsonContent
+                                                              updateReversed "Json2 content loaded"   
+                                                | None ->  updateReversed("No output div found.")                      
+                                            | _ ->
+                                                updateReversed "Invalid selection in dropdown."
+                                                Console.Log("Invalid selection in dropdown.")
+                                            checkAllJsons ()
+                                        with ex ->
+                                            match selectedValue with
+                                            | "json1" ->
+                                                match outputDiv1 with
+                                                | Some div -> div.TextContent <- sprintf "Error: %s" ex.Message
+                                                | None -> updateReversed (sprintf "No output div found. Error in Json (if it is a real json): %s" ex.Message)
+                                            // JsonDocument létrehozása
+                                            | "json2" ->
+                                                match outputDiv2 with
+                                                | Some div -> div.TextContent <- sprintf "Error: %s" ex.Message
+                                                | None -> updateReversed (sprintf "No output div found. Error in Json (if it is a real json): %s" ex.Message)
+                                            | _ -> updateReversed ("Invalid selection in dropdown.")
+                                        }
                                 |> Async.Start
 
         Templates.MainTemplate
