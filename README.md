@@ -32,6 +32,12 @@ merging, and exporting comparison results for broader use cases.
 - The search is case-sensitive.
 - If the key does not exist in either of the JSON files, no results will be displayed.
 
+### 3. Modal JSON Viewer
+
+*   **View Full JSON:** Allows users to view the complete, formatted JSON content from either the first or second input/output area within a pop-up modal dialog.
+*   **Easy Access:** Simply click the "Show JSON" button located next to the respective JSON output area to trigger the modal.
+*   **Clear Presentation:** The modal displays the JSON content clearly, typically using a `<pre>` tag for proper formatting and preserving whitespace.
+*   **Convenient Closing:** The modal can be easily dismissed by clicking the 'X' icon or the dedicated "Close" button.
 
 ---
 ## Screenshots
