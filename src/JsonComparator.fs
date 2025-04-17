@@ -12,7 +12,8 @@ module JsonComparator =
         { 
             same: bool
             json1Value: JsonValue
-            json2Value: JsonValue 
+            json2Value: JsonValue
+            forMerge : JsonValue
         }
     type UnionDictionary = Map<string, ComparisonResult>
     
@@ -64,13 +65,13 @@ module JsonComparator =
     let rec compareJsonValues (path: string) (value1: JsonValue) (value2: JsonValue) : (string * ComparisonResult) list =
         match value1, value2 with
         | Null, Null ->
-            [(path, { same = true; json1Value = Null; json2Value = Null })]
+            [(path, { same = true; json1Value = Null; json2Value = Null ; forMerge = Null })]
 
         | Null, _ ->
-            [(path, { same = false; json1Value = Null; json2Value = value2 })]
+            [(path, { same = false; json1Value = Null; json2Value = value2 ; forMerge = Null })]
 
         | _, Null ->
-            [(path, { same = false; json1Value = value1; json2Value = Null })]
+            [(path, { same = false; json1Value = value1; json2Value = Null ; forMerge = Null })]
 
         | Object obj1, Object obj2 ->
             let allKeys = 
@@ -95,9 +96,9 @@ module JsonComparator =
 
         | _ ->
             if value1 <> value2 then
-                [(path, { same = false; json1Value = value1; json2Value = value2 })]
+                [(path, { same = false; json1Value = value1; json2Value = value2 ; forMerge = Null })]
             else
-                [(path, { same = true; json1Value = value1; json2Value = value2 })]
+                [(path, { same = true; json1Value = value1; json2Value = value2 ; forMerge = Null })]
 
     
     /// <summary>

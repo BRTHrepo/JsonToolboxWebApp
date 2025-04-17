@@ -8,7 +8,7 @@ open WebSharper.JavaScript.Dom
 open WebSharper.UI
 open WebSharper.UI.Notation
 open WebSharper.UI.Templating
-
+open JsonToolboxWebApp.MergeInModal
 [<JavaScript>]
 module Templates =
     type MainTemplate = Templating.Template<"Main.html", ClientLoad.FromDocument, ServerLoad.PerRequest>
@@ -16,6 +16,7 @@ module Templates =
 [<JavaScript>]
 module Client =
 
+    let buttonMergeId = "MergeJsons"
     let inputId = "fileInput"
     let outputDiv1Id = "jsonOutput1"
     let outputDiv2Id = "jsonOutput2"
@@ -32,7 +33,7 @@ module Client =
         | null -> None
         | element -> Some element
         
-      // Modal tartalom frissítése és megnyitása
+
     let ShowJsonInModal (jsonContent: string) =
         let modalContent = JS.Document.GetElementById("formattedJson")
         modalContent.TextContent <- jsonContent // Modal tartalom frissítése
@@ -44,6 +45,13 @@ module Client =
         modal?focus()
     // Modal bezárása
     let HideJsonModal () =
+        let modalBody = JS.Document.GetElementById("modalBody")
+        modalBody.TextContent <- ""
+        let modalContent = JS.Document.GetElementById("formattedJson")
+        if isNull modalContent then
+            let pre = JS.Document.CreateElement("pre")
+            pre.SetAttribute("id", "formattedJson")
+            modalBody.AppendChild(pre) |> ignore
         let modal = JS.Document.QuerySelector("#jsonModal")
         modal?classList?remove("show") // Bootstrap modal bezárása
         modal?style?display <- "none"
@@ -74,8 +82,8 @@ module Client =
         with ex ->
             Console.Log("Error during JSON comparison: ", ex.Message)
             raise ex
-   
-   /// <summary>
+
+    /// <summary>
     ///    Get the text content of the output div based on the id
     /// </summary>
     /// <param name="id"> 1 or 2 </param>
@@ -92,7 +100,22 @@ module Client =
         | _ ->
             // Ha a bemenet nem 1 vagy 2, akkor null-t ad vissza
             null
+             // Modal tartalom frissítése és megnyitása
+    /// <summary>
+    ///    Shows the merge in modal
+    /// </summary>
+    /// <returns> </returns>
+    let ShowMergeInModal()  =
+        let modalBody = JS.Document.GetElementById("modalBody")
+        let json1Content = getOutputDivTextContent 1
+        let json2Content = getOutputDivTextContent 2
+        MergeInModal.populateModal modalBody (CompareJsons json1Content json2Content)
 
+        let modal = JS.Document.QuerySelector("#jsonModal")
+        modal?classList?add("show") // Bootstrap modal megnyitása
+        modal?style?display <- "block"
+        modal?("show")
+        modal?focus()
     // Not used
     /// <summary>
     ///   English : Filtering by key, exact match 
@@ -178,13 +201,16 @@ module Client =
             Console.Log("json1Content: ", json1Content)
             let json2Content = getOutputDivTextContent 2
             Console.Log("json1Content: ", json1Content)
-
+            let buttonMerge = getElementByIdOpt buttonMergeId
+            Console.Log("Merge button is" , buttonMerge)
+          
             if
                 not (isNull json1Content)
                 && not (isNull json2Content)
                 && not (json1Content.Length = 0)
                 && not (json2Content.Length = 0)
             then
+                
                 let result = CompareJsons json1Content json2Content
                 Console.Log("Comparison completed.", result)
 
@@ -197,7 +223,14 @@ module Client =
                 let formattedResult = formatComparisonResult filteredResultByKey
                 // Eredmény frissítése a HTML-ben
                 updateHtmlWithFormattedResult formattedResult
+                
+                match  buttonMerge with
+                   | Some button -> button.AddEventListener ("click", fun (ev: Event) -> ShowMergeInModal()   )
+                   | _ -> Console.Log("Merge button is not found")
             else
+                match  buttonMerge with
+                   | Some button -> button.AddEventListener ("click", fun (ev: Event) -> ()   )
+                   | _ -> Console.Log("Merge button is not found")
                 updateHtmlWithFormattedResult "One or both JSON contents are missing."
         with ex ->
             updateHtmlWithFormattedResult (sprintf "Error during JSON comparison: %s" ex.Message)
@@ -236,6 +269,18 @@ module Client =
     let initializeKeySearch () =
         if not (isNull keySearchInput) then
             keySearchInput.OnInput <- fun _ -> checkAllJsons ()
+        let buttonShowModal1 =  JS.Document.GetElementById("showJson1Modal") |> unbox<HTMLButtonElement>
+        buttonShowModal1.AddEventListener ("click", fun (ev: Event) -> ShowJsonInModal (getOutputDivTextContent 1)  )
+        let buttonShowModal2 = getElementByIdOpt ("showJson2Modal")
+        match buttonShowModal2 with
+              | Some button ->
+                  button.AddEventListener ("click", fun (ev: Event) -> ShowJsonInModal (getOutputDivTextContent 2)  )
+              | None ->  ()                            
+                        
+        let hideModal = JS.Document.GetElementById("closeModal")
+        hideModal.AddEventListener ("click", fun (ev: Event) -> HideJsonModal () )
+        let hideModal1 = JS.Document.GetElementById("closeModal1")
+        hideModal1.AddEventListener ("click", fun (ev: Event) -> HideJsonModal () )
     /// <summary>
     ///  Main function
     /// </summary>
@@ -251,27 +296,17 @@ module Client =
         JS.Window.OnLoad <-
             fun _ ->
                 initializeKeySearch ()
+           
                 let fileInput = JS.Document.GetElementById(inputId)
-                
+                Console.Log("File input is" , fileInput)
                 if not (isNull filterSelect) then
                     filterSelect.OnChange <- fun _ -> checkAllJsons ()
 
                 if fileInput <> null then
                     fileInput?onchange <-
                         fun _ ->
-                            let buttonShowModal1 =  JS.Document.GetElementById("showJson1Modal") |> unbox<HTMLButtonElement>
-                            buttonShowModal1.AddEventListener ("click", fun (ev: Event) -> ShowJsonInModal (getOutputDivTextContent 1)  )
+                            Console.Log("File input changed")
                             
-                            let buttonShowModal2 = getElementByIdOpt ("showJson2Modal")
-                            match buttonShowModal2 with
-                            | Some button ->
-                                button.AddEventListener ("click", fun (ev: Event) -> ShowJsonInModal (getOutputDivTextContent 2)  )
-                            | None ->  ()                            
-                        
-                            let hideModal = JS.Document.GetElementById("closeModal")
-                            hideModal.AddEventListener ("click", fun (ev: Event) -> HideJsonModal () )
-                            let hideModal1 = JS.Document.GetElementById("closeModal1")
-                            hideModal1.AddEventListener ("click", fun (ev: Event) -> HideJsonModal () )
                             let files = fileInput?files |> unbox<FileList>
                             if files.Length > 0 then
                                 let file = files.[0]
