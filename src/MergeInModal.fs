@@ -8,135 +8,145 @@ open WebSharper.JavaScript
 [<JavaScript>]
 module MergeInModal =
 
-    /// Recursively generates HTML for hierarchical JSON structure, including arrays and objects.
-    let isNullOrEmpty (s: string) = obj.ReferenceEquals(s, null) || s = ""
+    let private isNullOrEmpty (s: string) = obj.ReferenceEquals(s, null) || s = ""
 
-    let isArrayOrObject (result: ComparisonResult) =
-        match result.json1Value, result.json2Value with
-        | JsonValue.Array _, _
-        | _, JsonValue.Array _
-        | JsonValue.Object _, _
-        | _, JsonValue.Object _ -> true
-        | _ -> false
+    type ComparisonResult with
+        member this.IsArrayOrObjectOrTypeConflict =
+            match this.json1Value, this.json2Value with
+            | JsonValue.Array _, JsonValue.Array _
+            | JsonValue.Object _, JsonValue.Object _ -> true
+            | JsonValue.Array _, JsonValue.Object _
+            | JsonValue.Object _, JsonValue.Array _ -> true
+            | JsonValue.Array _, _
+            | _, JsonValue.Array _
+            | JsonValue.Object _, _
+            | _, JsonValue.Object _ -> true
+            | _ -> false
 
-    let isVariableNode (segment: string) (fullPath: string) (comparisonResults: Map<string, ComparisonResult>) =
-        // Csak akkor true, ha van ilyen kulcs, és az érték tömb vagy objektum
-        match comparisonResults.TryFind(fullPath) with
-        | Some result -> isArrayOrObject result
-        | None -> false
+    let private isVariableNode (segment: string) (fullPath: string) (comparisonResults: Map<string, ComparisonResult>) =
+        comparisonResults.TryFind fullPath
+        |> Option.map (fun r -> r.IsArrayOrObjectOrTypeConflict)
+        |> Option.defaultValue false
 
     let rec generateHtmlForHierarchy (path: string) (comparisonResults: Map<string, ComparisonResult>) =
-        let children =
+        let children = 
             comparisonResults
             |> Seq.groupBy (fun kvp ->
                 let key = kvp.Key
                 let remainingPath = key.Substring(path.Length).TrimStart('.')
-
-                if System.String.IsNullOrEmpty(remainingPath) then
-                    ""
+                
+                if isNullOrEmpty remainingPath then "" 
                 else
-                    remainingPath.Split([| '.'; '[' |])
-                    |> Array.filter (fun s -> not (System.String.IsNullOrEmpty(s)))
-                    |> fun arr -> if arr.Length > 0 then arr.[0] else "")
-            |> Seq.filter (fun (segment, _) -> not (System.String.IsNullOrEmpty(segment)))
+                    // JavaScript-kompatibilis indexkezelés
+                    let pattern = RegExp(@"^([^\[\.]*)(\[\d+\])?")
+                    let m = pattern.Exec(remainingPath)
+                    if m <> null then 
+                        if not (isNullOrEmpty m.[1]) then m.[1] 
+                        else if not (isNullOrEmpty m.[2]) then m.[2]
+                        else ""
+                    else
+                        let parts = remainingPath.Split('.')
+                        if parts.Length > 0 then parts.[0] else ""
+            )
+            |> Seq.filter (fun (segment, _) -> not (isNullOrEmpty segment))
 
         children
         |> Seq.map (fun (segment, groupedResults) ->
-            let fullPath = if path = "" then segment else sprintf "%s.%s" path segment
+            let fullPath = 
+                if path = "" then segment 
+                else sprintf "%s.%s" path segment
 
-            // Itt döntjük el, hogy változó-e (tömb vagy objektum), vagy konkrét elem
+            Console.Log("Current path:", fullPath)
+
             let isVar = isVariableNode segment fullPath comparisonResults
+            
+            // Típus információk meghatározása
+            let getTypeString = function
+                | JsonValue.Array _ -> "Array"
+                | JsonValue.Object _ -> "Object"
+                | _ -> "Value"
+            
+            let type1, type2 = 
+                match comparisonResults.TryFind fullPath with
+                | Some r -> getTypeString r.json1Value, getTypeString r.json2Value
+                | None -> "", ""
 
-            // Label: értékek megjelenítése
-            let label =
-                match comparisonResults.TryFind(fullPath) with
-                | Some result -> sprintf "%s: JSON1(%A) | JSON2(%A)" segment result.json1Value result.json2Value
-                | None -> segment
-
-            // Opciók: változónál include/exclude, elemeknél json1/json2/exclude
-            let optionsHtml =
-                if isVar then
+            let optionsHtml = 
+                match comparisonResults.TryFind fullPath with
+                | Some r ->
+                    let isNull v = match v with JsonValue.Null -> true | _ -> false
+                    let getTypeString = function
+                        | JsonValue.Array _ -> "Array"
+                        | JsonValue.Object _ -> "Object"
+                        | _ -> "Value"
+                    
+                    match r.json1Value, r.json2Value with
+                    | v1, v2 when isNull v1 && isNull v2 ->
+                        "<option value='null'>Exclude</option><option value='include'>Include</option>"
+                    
+                    | JsonValue.Array _, JsonValue.Array _ ->
+                        "<option value='null'>Exclude</option><option value='include'>Include Array</option><option value='json1'>Use JSON 1</option><option value='json2'>Use JSON 2</option>"
+                    
+                    | JsonValue.Object _, JsonValue.Object _ ->
+                        "<option value='null'>Exclude</option><option value='include'>Include Object</option><option value='json1'>Use JSON 1</option><option value='json2'>Use JSON 2</option>"
+                    
+                    | JsonValue.Object _, JsonValue.Array _ ->
+                        sprintf "<option value='null'>Exclude</option><option value='json1'>Use Object (JSON 1)</option><option value='json2'>Use Array (JSON 2)</option>"
+                    
+                    | JsonValue.Array _, JsonValue.Object _ ->
+                        sprintf "<option value='null'>Exclude</option><option value='json1'>Use Array (JSON 1)</option><option value='json2'>Use Object (JSON 2)</option>"
+                    
+                    | JsonValue.Array _, v2 ->
+                        sprintf "<option value='null'>Exclude</option><option value='json1'>Use Array (JSON 1)</option><option value='json2'>%A (JSON 2)</option>" v2
+                    
+                    | v1, JsonValue.Array _ ->
+                        sprintf "<option value='null'>Exclude</option><option value='json1'>%A (JSON 1)</option><option value='json2'>Use Array (JSON 2)</option>" v1
+                    
+                    | JsonValue.Object _, v2 ->
+                        sprintf "<option value='null'>Exclude</option><option value='json1'>Use Object (JSON 1)</option><option value='json2'>%A (JSON 2)</option>" v2
+                    
+                    | v1, JsonValue.Object _ ->
+                        sprintf "<option value='null'>Exclude</option><option value='json1'>%A (JSON 1)</option><option value='json2'>Use Object (JSON 2)</option>" v1
+                    
+                    | _ ->
+                        sprintf "<option value='null'>Exclude</option><option value='json1'>%A (JSON 1)</option><option value='json2'>%A (JSON 2)</option>" r.json1Value r.json2Value
+                | None ->
                     "<option value='null'>Exclude</option><option value='include'>Include</option>"
-                else
-                    let json1Value =
-                        match comparisonResults.TryFind(fullPath) with
-                        | Some r -> sprintf "(%A)" r.json1Value
-                        | None -> "N/A"
 
-                    let json2Value =
-                        match comparisonResults.TryFind(fullPath) with
-                        | Some r -> sprintf "(%A)" r.json2Value
-                        | None -> "N/A"
-                    //sprintf "<option value='null'>Exclude</option><option value='json1'>%s</option><option value='json2'>%s</option>" json1Value json2Value
-                    sprintf
-                        """
-                                <option value='null'>Exclude</option>
-                                <option value='json1' title='%A'>JSON 1</option>
-                                <option value='json2' title='%A'>JSON 2</option>
-                            """
-                        json1Value
-                        json2Value
 
-            let childHtml =
-                generateHtmlForHierarchy
-                    fullPath
-                    (groupedResults |> Seq.map (fun kvp -> kvp.Key, kvp.Value) |> Map.ofSeq)
+            let childHtml = 
+                generateHtmlForHierarchy fullPath (
+                    groupedResults
+                    |> Seq.map (fun kvp -> kvp.Key, kvp.Value)
+                    |> Map.ofSeq
+                )
 
-            sprintf "<li>%s<select data-key='%s'>%s</select><ul>%s</ul></li>" label fullPath optionsHtml childHtml)
+            sprintf """
+                <li class='node'>
+                    <span class='segment'>%s</span>
+                    <span class='types'>[%s/%s]</span>
+                    <select data-key='%s'>%s</select>
+                    <ul class='children'>%s</ul>
+                </li>
+            """ segment type1 type2 fullPath optionsHtml childHtml
+        )
         |> String.concat ""
 
-
-
-    /// Populates the modal with hierarchical JSON comparison results.
     let populateModal (modalBodyElement: Dom.Element) (comparisonResults: Map<string, ComparisonResult>) =
-        modalBodyElement.TextContent <- "" // Clear previous content
+        modalBodyElement.TextContent <- ""
         let htmlContent = generateHtmlForHierarchy "" comparisonResults
         modalBodyElement.InnerHTML <- sprintf "<ul>%s</ul>" htmlContent
-    (*comparisonResults |> Seq.iter (fun kvp ->
-            let key = kvp.Key
-            let result = kvp.Value
 
-            let containerDiv = JS.Document.CreateElement("div")
-            
-            let labelElement = JS.Document.CreateElement("label")
-            labelElement.TextContent <- sprintf "%s: JSON1(%A) | JSON2(%A)" key result.json1Value result.json2Value
-            
-            let selectElement = JS.Document.CreateElement("select")
-            selectElement.SetAttribute("data-key", key)
-            
-            let optionNull = JS.Document.CreateElement("option") |> unbox<HTMLOptionElement>
-            optionNull.Value <- "null"
-            optionNull.TextContent <- "Exclude"
-            
-            let optionJson1 = JS.Document.CreateElement("option") |> unbox<HTMLOptionElement>
-            optionJson1.Value <- "json1"
-            optionJson1.TextContent <- sprintf "JSON 1 (%A)" result.json1Value
-            
-            let optionJson2 = JS.Document.CreateElement("option") |> unbox<HTMLOptionElement>
-            optionJson2.Value <- "json2"
-            optionJson2.TextContent <- sprintf "JSON 2 (%A)" result.json2Value
-
-            selectElement.AppendChild(optionNull) |> ignore
-            selectElement.AppendChild(optionJson1) |> ignore
-            selectElement.AppendChild(optionJson2) |> ignore
-
-            containerDiv.AppendChild(labelElement) |> ignore
-            containerDiv.AppendChild(selectElement) |> ignore
-            modalBodyElement.AppendChild(containerDiv) |> ignore
-        ) *)
-
-    /// Updates the `forMerge` field in `ComparisonResult` based on user selections in the modal.
     let updateForMerge (comparisonResults: Map<string, ComparisonResult>) =
         let selects = JS.Document.QuerySelectorAll("select[data-key]")
-        // NodeList -> seq
         let mutable updatedResults = comparisonResults
 
         for i = 0 to selects.Length - 1 do
             let select = selects.[i] :?> HTMLSelectElement
             let key = select.GetAttribute("data-key")
-            let selectedValue = select.GetAttribute("value")
+            let selectedValue = select?value
 
-            match comparisonResults.TryFind(key) with
+            match comparisonResults.TryFind key with
             | Some result ->
                 let newResult =
                     match selectedValue with
@@ -146,18 +156,39 @@ module MergeInModal =
                     | "json2" ->
                         { result with
                             forMerge = result.json2Value }
-                    | _ -> { result with forMerge = Null }
+                    | "array" ->
+                        match result.json1Value, result.json2Value with
+                        | JsonValue.Array a, _ ->
+                            { result with
+                                forMerge = JsonValue.Array a }
+                        | _, JsonValue.Array b ->
+                            { result with
+                                forMerge = JsonValue.Array b }
+                        | _ ->
+                            { result with
+                                forMerge = JsonValue.Null }
+                    | "primitive" ->
+                        match result.json1Value, result.json2Value with
+                        | JsonValue.Array _, b -> { result with forMerge = b }
+                        | a, JsonValue.Array _ -> { result with forMerge = a }
+                        | JsonValue.Object _, b -> { result with forMerge = b }
+                        | a, JsonValue.Object _ -> { result with forMerge = a }
+                        | a, _ -> { result with forMerge = a }
+                    | "include" -> result
+                    | _ ->
+                        { result with
+                            forMerge = JsonValue.Null }
 
                 updatedResults <- updatedResults.Add(key, newResult)
             | None -> ()
 
+        updatedResults
 
-    /// Generates a merged JSON object based on user selections.
     let generateMergedJson (comparisonResults: Map<string, ComparisonResult>) : Map<string, JsonValue> =
         comparisonResults
         |> Map.fold
-            (fun (acc: Map<string, JsonValue>) key result ->
+            (fun acc key result ->
                 match result.forMerge with
-                | Null -> acc // Skip unselected keys
+                | JsonValue.Null -> acc
                 | _ -> acc.Add(key, result.forMerge))
             Map.empty

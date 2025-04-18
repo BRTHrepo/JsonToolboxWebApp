@@ -90,8 +90,8 @@ module JsonComparator =
             let maxLength = max arr1.Length arr2.Length
             [0 .. maxLength - 1]
             |> List.collect (fun i ->
-                let value1 = List.tryItem i arr1 |> Option.defaultValue Null
-                let value2 = List.tryItem i arr2 |> Option.defaultValue Null
+                let value1 = List.tryItem i (Array.toList arr1) |> Option.defaultValue Null
+                let value2 = List.tryItem i (Array.toList arr2) |> Option.defaultValue Null
                 compareJsonValues $"{path}[{i}]" value1 value2)
 
         | _ ->

@@ -11,10 +11,17 @@ module JsonTraverser =
         | Integer of int
         | Float of float
         | Boolean of bool
-        | Array of JsonValue list
+        | Array of JsonValue array
         | Object of Map<string, JsonValue>
         | Null
-        
+    let isArray = function 
+    | JsonValue.Array _ -> true 
+    | _ -> false
+
+    let isObject = function 
+        | JsonValue.Object _ -> true 
+        | _ -> false
+    
     /// <summary>
     /// Parses a JSON string into a native JavaScript object and recursively traverses its structure.
     /// The function converts the JSON document into a `Map[string, JsonValue]`, where each key represents
