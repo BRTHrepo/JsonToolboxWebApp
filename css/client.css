@@ -230,4 +230,47 @@ select {
     padding: 10px; /* Kényelmes megjelenítéshez távolság a szélektől */
 }
 
+.tree-node {
+    margin-left: 20px;
+}
+
+.node-header {
+    cursor: pointer;
+    padding: 5px;
+}
+
+.type-conflict {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.type-match {
+    color: #28a745;
+}
+
+.value-hint {
+    display: inline-block;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: #007bff;
+    cursor: help;
+}
+
+.type-selection label {
+    display: block;
+    margin: 5px 0;
+}
+
+.cmp-collapsible-section {
+    margin-bottom: 5px;
+    border-left: 2px solid #ccc;
+    padding-left: 8px;
+}
+
+.cmp-collapsible-header:hover {
+    color: #007BFF;
+}
+
+
 

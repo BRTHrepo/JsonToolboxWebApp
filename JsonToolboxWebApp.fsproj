@@ -15,6 +15,7 @@
     <Compile Include="src\JsonTraverser.fs" />
     <Compile Include="src\JsonComparator.fs" />
     <Compile Include="src\MergeInModal.fs" />
+    <Compile Include="src\ComparisonResultPrinter.fs" />
     <Content Include="Main.html" />
     <Compile Include="Client.fs" />
     <Compile Include="Main.fs" />

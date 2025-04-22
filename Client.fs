@@ -1,5 +1,6 @@
 ﻿namespace JsonToolboxWebApp
 
+open JsonToolboxWebApp.ComparisonResultPrinter
 open JsonToolboxWebApp.JsonComparator.JsonComparator
 open JsonToolboxWebApp.JsonTraverser
 open WebSharper
@@ -17,10 +18,11 @@ module Templates =
 module Client =
 
     let buttonMergeId = "MergeJsons"
+    let buttoncShowCmparisonResultId = "comparisonResultBt"
     let inputId = "fileInput"
     let outputDiv1Id = "jsonOutput1"
     let outputDiv2Id = "jsonOutput2"
-    let comparisonResultDiv = JS.Document.GetElementById("comparisonResult")
+   // let comparisonResultDiv = JS.Document.GetElementById("comparisonResult")
     let filterSelect = JS.Document.GetElementById("filterSame") :?> HTMLSelectElement
     
         /// <summary>
@@ -71,16 +73,23 @@ module Client =
     /// <param name="jsonString2"> JSON string 2 </param>
     /// <returns> Map of comparison results </returns>
     let CompareJsons jsonString1 jsonString2 =
+        Console.Log("Comparing JSON strings...")
         try
             // JSON stringek feldolgozása JsonValue típusra
             let json1 = traverseJsonDocument jsonString1
             let json2 = traverseJsonDocument jsonString2
 
             // Összehasonlítás végrehajtása
-            let comparisonResult = compareJsonDictionaries json1 json2
-            comparisonResult // További feldolgozásra visszaadható
+            let comparisonResult = compareJsonTrees json1 json2
+            Console.Log("Comparison result: 2")
+            let outputString = ComparisonResultPrinter.printComparisonResult comparisonResult 0
+            Console.Log(outputString)
+      
+
+            // A root elem visszaadása lista helyett
+            comparisonResult
         with ex ->
-            Console.Log("Error during JSON comparison: ", ex.Message)
+            Console.Log("Error during JSON comparison: " + ex.Message)
             raise ex
 
     /// <summary>
@@ -109,7 +118,7 @@ module Client =
         let modalBody = JS.Document.GetElementById("modalBody")
         let json1Content = getOutputDivTextContent 1
         let json2Content = getOutputDivTextContent 2
-        MergeInModal.populateModal modalBody (CompareJsons json1Content json2Content)
+        //MergeInModal.populateModal modalBody (compareJsonTrees json1Content json2Content)
 
         let modal = JS.Document.QuerySelector("#jsonModal")
         modal?classList?add("show") // Bootstrap modal megnyitása
@@ -137,22 +146,14 @@ module Client =
     /// <summary>
     ///    Filtering by key, contains
     /// </summary>
-    /// <param name="map"> UnionDictionary </param>
+    /// <param name="map">  UnionDictionary </param>
     /// <returns> Filtered results</returns>
-    let filterResultsByKey (map: Map<string, ComparisonResult>) =
-        let key =
-            if isNull keySearchInput.Value || keySearchInput.Value.Trim() = "" then
-                None
-            else
-                Some(keySearchInput.Value.Trim())
-
+    let rec filterResultsByKey (map: Map<string, ComparisonResult>) =
+        let key = if isNull keySearchInput.Value then keySearchInput.Value.Trim() else ""
         match key with
-        | Some filterString when not (isNull filterString) && filterString.Trim() <> "" ->
-            map
-            |> Map.filter (fun mapKey _ ->
-                // Egyszerű sztring tartalmazás vizsgálata
-                mapKey.Contains(filterString))
-        | _ -> map // Ha nincs szűrősztring megadva, visszaadja az eredeti eredményeket.
+        | "" -> map
+        | filterString ->
+            map |> Map.filter (fun mapKey _ -> mapKey.Contains(filterString))
 
 
     /// <summary>
@@ -161,35 +162,57 @@ module Client =
     /// <param name="map"> UnionDictionary </param>
     /// <param name="filter"> All, Same , Different </param>
     /// <returns> Filtered results </returns>
-    let filterResultsBySame (map: Map<string, ComparisonResult>) (filter: string) : Map<string, ComparisonResult> =
+    let rec filterResultsBySame (cmpr: ComparisonResult) (filter: string) =
         match filter with
-        | "true" -> map |> Map.filter (fun _ v -> v.same) // Csak azonosak
-        | "false" -> map |> Map.filter (fun _ v -> not v.same) // Csak eltérők
-        | _ -> map // Mindkettőt visszaadja ("all")
-        
+        | "true" -> cmpr
+        | "false" -> cmpr
+        | _ -> cmpr
+
     /// <summary>
     ///    Formats the comparison result into a string
     ///    </summary>
     /// <param name="dictionary"> UnionDictionary </param>
     /// <returns> Formatted comparison result </returns>
-    let formatComparisonResult (dictionary: Map<string, ComparisonResult>) : string =
-        dictionary
-        |> Map.fold
-            (fun acc key value ->
-                let same = sprintf "Same: %b" value.same
-                let json1 = sprintf "JSON1 Value: %A" value.json1Value
-                let json2 = sprintf "JSON2 Value: %A" value.json2Value
-                acc + sprintf "\nKey: %s\n  %s\n  %s\n  %s\n" key same json1 json2)
-            ""
+    let rec formatComparisonResult (cmpr: ComparisonResult) (indentLevel: int) =
+        let padding = String.replicate (indentLevel * 4) " "
+        match cmpr with
+        | PrimitiveComparison pc ->
+            let same = sprintf "%*sSame: %b" (indentLevel * 4) "" pc.same
+            let json1 = sprintf "%*sJSON1: %A" (indentLevel * 4) "" pc.json1Value
+            let json2 = sprintf "%*sJSON2: %A" (indentLevel * 4) "" pc.json2Value
+            sprintf "%sPrimitiveComparison\n%s\n%s\n%s\n\n" padding same json1 json2
+        
+        | ObjectComparison oc ->
+            let same = sprintf "%*sSame: %b" (indentLevel * 4) "" oc.same
+            let json1 = sprintf "%*sJSON1: %A" (indentLevel * 4) "" oc.json1Value
+            let json2 = sprintf "%*sJSON2: %A" (indentLevel * 4) "" oc.json2Value
+            let childrenFormatted =
+                oc.children |> Map.fold (fun acc key value ->
+                    acc + formatComparisonResult value (indentLevel + 1)
+                ) ""
+            sprintf "%sObjectComparison\n%s\n%s\n%s\n%s\n\n" padding same json1 json2 childrenFormatted
+        
+        | ArrayComparison ac ->
+            let same = sprintf "%*sSame: %b" (indentLevel * 4) "" ac.same
+            let json1 = sprintf "%*sJSON1: %A" (indentLevel * 4) "" ac.json1Value
+            let json2 = sprintf "%*sJSON2: %A" (indentLevel * 4) "" ac.json2Value
+            let itemsFormatted =
+                ac.items |> Array.fold (fun acc item ->
+                    acc + formatComparisonResult item (indentLevel + 1)
+                ) ""
+            sprintf "%sArrayComparison\n%s\n%s\n%s\n%s\n\n" padding same json1 json2 itemsFormatted
+
+
+
    
     /// <summary>
     ///    Updates the HTML with the formatted comparison result
     /// </summary>
     /// <param name="formattedResult"> Formatted comparison result </param>
-    let updateHtmlWithFormattedResult (formattedResult: string) =
+ //   let updateHtmlWithFormattedResult (formattedResult: string) =
         // Eredmény frissítése a HTML-ben
-        if not (isNull comparisonResultDiv) then
-            comparisonResultDiv.TextContent <- formattedResult
+     //   if not (isNull comparisonResultDiv) then
+      //      comparisonResultDiv.TextContent <- formattedResult
             
     /// <summary>
     ///    Checks if all JSONs are loaded and ready for comparison, then performs the comparison
@@ -210,20 +233,20 @@ module Client =
                 && not (json1Content.Length = 0)
                 && not (json2Content.Length = 0)
             then
-                
+                let modalBody = JS.Document.GetElementById("modalBody")
                 let result = CompareJsons json1Content json2Content
-                Console.Log("Comparison completed.", result)
-
+               // Console.Log("Comparison completed", result)
+              
                 let selectedFilter = filterSelect?value
                 // Szűrt eredmények előállítása
-                let filteredResult = filterResultsBySame result selectedFilter
+               // let filteredResult = filterResultsBySame result selectedFilter
                 // key szűrés
-                let filteredResultByKey = filterResultsByKey filteredResult
+               // let filteredResultByKey = filterResultsByKey filteredResult
                 // Formázott eredmény előállítása
-                let formattedResult = formatComparisonResult filteredResultByKey
+              //  let formattedResult = formatComparisonResult filteredResult
                 // Eredmény frissítése a HTML-ben
-                updateHtmlWithFormattedResult formattedResult
-                
+              //  updateHtmlWithFormattedResult formattedResult
+                formatSingleComparisonResultForModal modalBody result selectedFilter keySearchInput.Value
                 match  buttonMerge with
                    | Some button -> button.AddEventListener ("click", fun (ev: Event) -> ShowMergeInModal()   )
                    | _ -> Console.Log("Merge button is not found")
@@ -231,15 +254,12 @@ module Client =
                 match  buttonMerge with
                    | Some button -> button.AddEventListener ("click", fun (ev: Event) -> ()   )
                    | _ -> Console.Log("Merge button is not found")
-                updateHtmlWithFormattedResult "One or both JSON contents are missing."
+                //updateHtmlWithFormattedResult "One or both JSON contents are missing."
         with ex ->
-            updateHtmlWithFormattedResult (sprintf "Error during JSON comparison: %s" ex.Message)
+             Console.Log("Error during JSON comparison", ex)
+          //  updateHtmlWithFormattedResult (sprintf "Error during JSON comparison: %s" ex.Message)
             
-    /// <summary>
-    ///    A function that does something with the input string , from the example
-    /// </summary>
-    let DoSomething (input: string) =
-        System.String(Array.rev (input.ToCharArray()))
+
 
     /// <summary>
     ///    Reads the JSON content from the input file . Invokes the JavaScript script embedded in the HTML, which is responsible for reading the JSON content from the input file.
@@ -267,8 +287,8 @@ module Client =
     ///    Initializes the key search input field , which triggers the comparison when the value changes
     /// </summary>
     let initializeKeySearch () =
-        if not (isNull keySearchInput) then
-            keySearchInput.OnInput <- fun _ -> checkAllJsons ()
+        //if not (isNull keySearchInput) then
+           // keySearchInput.OnChange <- fun _ -> checkAllJsons ()
         let buttonShowModal1 =  JS.Document.GetElementById("showJson1Modal") |> unbox<HTMLButtonElement>
         buttonShowModal1.AddEventListener ("click", fun (ev: Event) -> ShowJsonInModal (getOutputDivTextContent 1)  )
         let buttonShowModal2 = getElementByIdOpt ("showJson2Modal")
@@ -281,6 +301,8 @@ module Client =
         hideModal.AddEventListener ("click", fun (ev: Event) -> HideJsonModal () )
         let hideModal1 = JS.Document.GetElementById("closeModal1")
         hideModal1.AddEventListener ("click", fun (ev: Event) -> HideJsonModal () )
+        let buttoncShowCmparisonResult =  JS.Document.GetElementById(buttoncShowCmparisonResultId) |> unbox<HTMLButtonElement>
+        buttoncShowCmparisonResult.AddEventListener ("click", fun (ev: Event) ->  checkAllJsons ()  )
     /// <summary>
     ///  Main function
     /// </summary>

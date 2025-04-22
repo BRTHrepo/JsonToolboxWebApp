@@ -4,191 +4,114 @@ open JsonToolboxWebApp.JsonComparator.JsonComparator
 open JsonToolboxWebApp.JsonTraverser
 open WebSharper
 open WebSharper.JavaScript
+open WebSharper.JavaScript.Dom
 
 [<JavaScript>]
 module MergeInModal =
+    type TreeNode =
+        {
+            Path: string
+            Name: string
+            Type1: string
+            Type2: string
+            ValueHint1: string
+            ValueHint2: string
+            IsConflict: bool
+            Children: TreeNode list
+        }
 
-    let private isNullOrEmpty (s: string) = obj.ReferenceEquals(s, null) || s = ""
+    let private isNullOrEmpty (s: string) =
+      //  JS.Inline "typeof $0 === 'string' ? $0.trim() === '' : true" s
+        JS.Inline("typeof $0 === 'string' ? $0.trim() === '' : true")
 
-    type ComparisonResult with
-        member this.IsArrayOrObjectOrTypeConflict =
-            match this.json1Value, this.json2Value with
-            | JsonValue.Array _, JsonValue.Array _
-            | JsonValue.Object _, JsonValue.Object _ -> true
-            | JsonValue.Array _, JsonValue.Object _
-            | JsonValue.Object _, JsonValue.Array _ -> true
-            | JsonValue.Array _, _
-            | _, JsonValue.Array _
-            | JsonValue.Object _, _
-            | _, JsonValue.Object _ -> true
-            | _ -> false
+ 
 
-    let private isVariableNode (segment: string) (fullPath: string) (comparisonResults: Map<string, ComparisonResult>) =
-        comparisonResults.TryFind fullPath
-        |> Option.map (fun r -> r.IsArrayOrObjectOrTypeConflict)
-        |> Option.defaultValue false
 
-    let rec generateHtmlForHierarchy (path: string) (comparisonResults: Map<string, ComparisonResult>) =
-        let children = 
+    let buildTree (comparisonResults: Map<string, ComparisonResult>) =
+        Console.Log("comparisonResults.Count " + comparisonResults.Count.ToString())
+         // Segédfüggvény annak ellenőrzésére, hogy egy útvonal egy másik gyermeke-e
+        let isChildPath (possibleParent: string) (possibleChild: string) =
+            possibleChild.StartsWith(possibleParent + ".") || 
+            possibleChild.StartsWith(possibleParent + "[")
+        
+        // Ellenőrzi, hogy egy útvonal gyermeke-e bármely másik útvonalnak
+        let isChildOfAny (path: string) =
             comparisonResults
-            |> Seq.groupBy (fun kvp ->
-                let key = kvp.Key
-                let remainingPath = key.Substring(path.Length).TrimStart('.')
-                
-                if isNullOrEmpty remainingPath then "" 
+            |> Map.exists (fun parentPath _ -> 
+                path <> parentPath && isChildPath parentPath path)
+        
+        // Csak a gyökér elemekre építünk fát (amelyek nem gyermekei másnak)
+        comparisonResults 
+        |> Map.toList 
+        |> List.filter (fun (path, _) -> not (isChildOfAny path))
+   //     |> List.map (fun (k, v) ->// buildTreeRecursive k k v)
+
+
+    let rec private renderNodesToHtml (nodes: TreeNode list) =
+        Console.Log("Rendering nodes to HTML...")
+        nodes
+        |> List.map (fun node ->
+            let childrenHtml = renderNodesToHtml node.Children
+            Console.Log($"Rendering children HTML: {childrenHtml}")
+            let hasChildren = not (List.isEmpty node.Children)
+            Console.Log($"Has children: {hasChildren}")
+            let conflictClass = if node.IsConflict then "conflict" else ""
+            Console.Log($"Rendering node: {node.Name}")
+            Console.Log($"Rendering children: {childrenHtml}")
+            Console.Log($"Rendering conflict class: {conflictClass}")
+            let typeClass =
+                match node.Type1, node.Type2 with
+                | "Array", "Array" -> "node-array"
+                | "Object", "Object" -> "node-object"
+                | _ -> "node-primitive"
+            
+            let tooltip = $"Path: {node.Path}\nJSON1: {node.ValueHint1}\nJSON2: {node.ValueHint2}"
+            
+            let headerContent =
+                if node.IsConflict then
+                    $"""<span class="node-name">{node.Name}</span>
+                        <span class="types">{node.Type1} | {node.Type2}</span>
+                        <select class="conflict-select" data-path="{node.Path}">
+                            <option value="json1">{node.ValueHint1}</option>
+                            <option value="json2">{node.ValueHint2}</option>
+                        </select>"""
                 else
-                    // JavaScript-kompatibilis indexkezelés
-                    let pattern = RegExp(@"^([^\[\.]*)(\[\d+\])?")
-                    let m = pattern.Exec(remainingPath)
-                    if m <> null then 
-                        if not (isNullOrEmpty m.[1]) then m.[1] 
-                        else if not (isNullOrEmpty m.[2]) then m.[2]
-                        else ""
-                    else
-                        let parts = remainingPath.Split('.')
-                        if parts.Length > 0 then parts.[0] else ""
-            )
-            |> Seq.filter (fun (segment, _) -> not (isNullOrEmpty segment))
-
-        children
-        |> Seq.map (fun (segment, groupedResults) ->
-            let fullPath = 
-                if path = "" then segment 
-                else sprintf "%s.%s" path segment
-
-            Console.Log("Current path:", fullPath)
-
-            let isVar = isVariableNode segment fullPath comparisonResults
+                    $"""<span class="node-name">{node.Name}</span>
+                        <span class="types">{node.Type1} | {node.Type2}</span>"""
             
-            // Típus információk meghatározása
-            let getTypeString = function
-                | JsonValue.Array _ -> "Array"
-                | JsonValue.Object _ -> "Object"
-                | _ -> "Value"
-            
-            let type1, type2 = 
-                match comparisonResults.TryFind fullPath with
-                | Some r -> getTypeString r.json1Value, getTypeString r.json2Value
-                | None -> "", ""
-
-            let optionsHtml = 
-                match comparisonResults.TryFind fullPath with
-                | Some r ->
-                    let isNull v = match v with JsonValue.Null -> true | _ -> false
-                    let getTypeString = function
-                        | JsonValue.Array _ -> "Array"
-                        | JsonValue.Object _ -> "Object"
-                        | _ -> "Value"
-                    
-                    match r.json1Value, r.json2Value with
-                    | v1, v2 when isNull v1 && isNull v2 ->
-                        "<option value='null'>Exclude</option><option value='include'>Include</option>"
-                    
-                    | JsonValue.Array _, JsonValue.Array _ ->
-                        "<option value='null'>Exclude</option><option value='include'>Include Array</option><option value='json1'>Use JSON 1</option><option value='json2'>Use JSON 2</option>"
-                    
-                    | JsonValue.Object _, JsonValue.Object _ ->
-                        "<option value='null'>Exclude</option><option value='include'>Include Object</option><option value='json1'>Use JSON 1</option><option value='json2'>Use JSON 2</option>"
-                    
-                    | JsonValue.Object _, JsonValue.Array _ ->
-                        sprintf "<option value='null'>Exclude</option><option value='json1'>Use Object (JSON 1)</option><option value='json2'>Use Array (JSON 2)</option>"
-                    
-                    | JsonValue.Array _, JsonValue.Object _ ->
-                        sprintf "<option value='null'>Exclude</option><option value='json1'>Use Array (JSON 1)</option><option value='json2'>Use Object (JSON 2)</option>"
-                    
-                    | JsonValue.Array _, v2 ->
-                        sprintf "<option value='null'>Exclude</option><option value='json1'>Use Array (JSON 1)</option><option value='json2'>%A (JSON 2)</option>" v2
-                    
-                    | v1, JsonValue.Array _ ->
-                        sprintf "<option value='null'>Exclude</option><option value='json1'>%A (JSON 1)</option><option value='json2'>Use Array (JSON 2)</option>" v1
-                    
-                    | JsonValue.Object _, v2 ->
-                        sprintf "<option value='null'>Exclude</option><option value='json1'>Use Object (JSON 1)</option><option value='json2'>%A (JSON 2)</option>" v2
-                    
-                    | v1, JsonValue.Object _ ->
-                        sprintf "<option value='null'>Exclude</option><option value='json1'>%A (JSON 1)</option><option value='json2'>Use Object (JSON 2)</option>" v1
-                    
-                    | _ ->
-                        sprintf "<option value='null'>Exclude</option><option value='json1'>%A (JSON 1)</option><option value='json2'>%A (JSON 2)</option>" r.json1Value r.json2Value
-                | None ->
-                    "<option value='null'>Exclude</option><option value='include'>Include</option>"
-
-
-            let childHtml = 
-                generateHtmlForHierarchy fullPath (
-                    groupedResults
-                    |> Seq.map (fun kvp -> kvp.Key, kvp.Value)
-                    |> Map.ofSeq
-                )
-
-            sprintf """
-                <li class='node'>
-                    <span class='segment'>%s</span>
-                    <span class='types'>[%s/%s]</span>
-                    <select data-key='%s'>%s</select>
-                    <ul class='children'>%s</ul>
-                </li>
-            """ segment type1 type2 fullPath optionsHtml childHtml
+            $"""<li class="tree-node {typeClass} {conflictClass}" data-path="{node.Path}" title="{tooltip}">
+                {headerContent}
+                {if hasChildren then $"<ul class=\"nested\">{childrenHtml}</ul>" else ""}
+            </li>"""
         )
-        |> String.concat ""
+        |> String.concat "\n"
 
-    let populateModal (modalBodyElement: Dom.Element) (comparisonResults: Map<string, ComparisonResult>) =
-        modalBodyElement.TextContent <- ""
-        let htmlContent = generateHtmlForHierarchy "" comparisonResults
-        modalBodyElement.InnerHTML <- sprintf "<ul>%s</ul>" htmlContent
+    let renderTreeToHtml (tree: TreeNode list) =
+        $"<ul class=\"tree-container\">{renderNodesToHtml tree}</ul>"
 
-    let updateForMerge (comparisonResults: Map<string, ComparisonResult>) =
-        let selects = JS.Document.QuerySelectorAll("select[data-key]")
-        let mutable updatedResults = comparisonResults
+    let populateModal (modalBody: Dom.Element) (comparisonResults: Map<string, ComparisonResult>) =
+        try
+            Console.Log("Populating modal with comparison results...")
+            let treeNodes = buildTree comparisonResults
+       //     let generatedHtml = renderTreeToHtml treeNodes
+            
+            // Helyes tartalom törlése
+            while modalBody.HasChildNodes() do // Zárójelek hozzáadva
+                modalBody.RemoveChild(modalBody.FirstChild) |> ignore
+            
+            // Új tartalom hozzáadása
+            let doc = JS.Document
+            let fragment = doc.CreateDocumentFragment()
+            let tempDiv = doc.CreateElement("div")
+          //  tempDiv?innerHTML <- generatedHtml
+            
+            while tempDiv.FirstChild <> null do
+                fragment.AppendChild(tempDiv.FirstChild) |> ignore
+            
+            modalBody.AppendChild(fragment) |> ignore
+            
+        with ex ->
+            Console.Error("Error populating modal:", ex)
 
-        for i = 0 to selects.Length - 1 do
-            let select = selects.[i] :?> HTMLSelectElement
-            let key = select.GetAttribute("data-key")
-            let selectedValue = select?value
 
-            match comparisonResults.TryFind key with
-            | Some result ->
-                let newResult =
-                    match selectedValue with
-                    | "json1" ->
-                        { result with
-                            forMerge = result.json1Value }
-                    | "json2" ->
-                        { result with
-                            forMerge = result.json2Value }
-                    | "array" ->
-                        match result.json1Value, result.json2Value with
-                        | JsonValue.Array a, _ ->
-                            { result with
-                                forMerge = JsonValue.Array a }
-                        | _, JsonValue.Array b ->
-                            { result with
-                                forMerge = JsonValue.Array b }
-                        | _ ->
-                            { result with
-                                forMerge = JsonValue.Null }
-                    | "primitive" ->
-                        match result.json1Value, result.json2Value with
-                        | JsonValue.Array _, b -> { result with forMerge = b }
-                        | a, JsonValue.Array _ -> { result with forMerge = a }
-                        | JsonValue.Object _, b -> { result with forMerge = b }
-                        | a, JsonValue.Object _ -> { result with forMerge = a }
-                        | a, _ -> { result with forMerge = a }
-                    | "include" -> result
-                    | _ ->
-                        { result with
-                            forMerge = JsonValue.Null }
 
-                updatedResults <- updatedResults.Add(key, newResult)
-            | None -> ()
-
-        updatedResults
-
-    let generateMergedJson (comparisonResults: Map<string, ComparisonResult>) : Map<string, JsonValue> =
-        comparisonResults
-        |> Map.fold
-            (fun acc key result ->
-                match result.forMerge with
-                | JsonValue.Null -> acc
-                | _ -> acc.Add(key, result.forMerge))
-            Map.empty
