@@ -84,17 +84,23 @@ The `traverseElement` function recursively processes JSON structures:
 - Ensures robust handling of edge cases like `null`.
 
 ### 3. Comparison
-The `compareJsonValues` function compares two JSON structures recursively:
-- Identifies differences in keys, values, and array sizes.
-- Outputs results as a `UnionDictionary`.
+- The `compareJsonTrees` function compares two JSON structures recursively:
+  - Identifies differences in keys, values, and array sizes.
+  - Outputs results as a `ComparisonResult`.
+  - Deep Recursion: 
+     The comparison handles nested structures through recursive calls to `compareJsonTrees`.
+  - Type Mismatch Handling:  
+     Special `TypeMismatchComparison` cases handle scenarios like comparing arrays vs objects.
+  - Array Index Alignment:  
+     When comparing arrays, the code pads shorter arrays with `Null` values to ensure index-to-index comparison:
 
 ### 4. Filtering
-The filtering logic dynamically adjusts the displayed results based on user selection:
-- Filters by `same = true`, `same = false`, or shows all entries.
-- The Key Filter Search feature allows users to filter the comparison results by checking if the key contains the provided substring.
-- This functionality ensures a more focused analysis of JSON differences.
-- In the modal, matching results are highlighted, while non-matching fields are shown faded (light gray).
-- The filter and key search only affect the results when you click the "Show Result" button, which opens the modal and displays the filtered comparison there
+- The filtering logic dynamically adjusts the displayed results based on user selection:
+  - Filters by `same = true`, `same = false`, or shows all entries.
+  - The Key Filter Search feature allows users to filter the comparison results by checking if the key contains the provided substring.
+  - This functionality ensures a more focused analysis of JSON differences.
+  - In the modal, matching results are highlighted, while non-matching fields are shown faded (light gray).
+  - The filter and key search only affect the results when you click the "Show Result" button, which opens the modal and displays the filtered comparison there
 
 
 ---
