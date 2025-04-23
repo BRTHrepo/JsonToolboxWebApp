@@ -20,17 +20,19 @@ merging, and exporting comparison results for broader use cases.
    - Show all results.
    - Show only identical entries (`same = true`).
    - Show only differing entries (`same = false`).
-- Dynamically updates the output when the filter changes.
+
 
 ### 2. **Key Filter Search Feature**
-- Allows users to filter the comparison results by entering a specific key.
 - The Key Filter Search feature allows users to filter the comparison results by entering a specific key or substring.
 - If the input field contains a valid string, the application filters the results to include only entries where the key contains the provided substring.
-- Real-time updates to displayed results when the filter changes (`OnChange` event listener).
+- Filtering is only applied when the user clicks the "Show Result" button; there are no real-time updates as the filter changes.
+- In the modal, matching results are highlighted, while non-matching fields are shown faded (light gray).
 
 #### Notes
 - The search is case-sensitive.
-- If the key does not exist in either of the JSON files, no results will be displayed.
+- If the key does not exist in either of the JSON files, no results will be highlighted.
+
+
 
 ### 3. Modal JSON Viewer
 
@@ -38,6 +40,11 @@ merging, and exporting comparison results for broader use cases.
 *   **Easy Access:** Simply click the "Show JSON" button located next to the respective JSON output area to trigger the modal.
 *   **Clear Presentation:** The modal displays the JSON content clearly, typically using a `<pre>` tag for proper formatting and preserving whitespace.
 *   **Convenient Closing:** The modal can be easily dismissed by clicking the 'X' icon or the dedicated "Close" button.
+
+### 4. **Merge Functionality (In Progress)**
+- The JSON merge feature is under active development.
+- The goal is to allow users to create a third, merged JSON document by interactively selecting elements from both input JSONs.
+- This will enable flexible, user-driven merging and conflict resolution.
 
 ---
 ## Screenshots
@@ -52,15 +59,15 @@ merging, and exporting comparison results for broader use cases.
 
 ### 3. Select Filter
 
-<img src="images/filter.png" alt="Select Filter" width="50%" height="50%">
+
 
 ### 4. Result Section
 
-<img src="images/result.png" alt="Result Section" width="50%" height="50%">
+
 
 ### 5.  Key Search
 
-<img src="images/byKey.png" alt="Select Filter" width="50%" height="50%">
+<<img src="images/resultNew.png" alt="Result Section" width="50%" height="50%">
 
 ---
 
@@ -84,9 +91,10 @@ The `compareJsonValues` function compares two JSON structures recursively:
 ### 4. Filtering
 The filtering logic dynamically adjusts the displayed results based on user selection:
 - Filters by `same = true`, `same = false`, or shows all entries.
-- Updates output in real-time when the filter changes.
 - The Key Filter Search feature allows users to filter the comparison results by checking if the key contains the provided substring.
 - This functionality ensures a more focused analysis of JSON differences.
+- In the modal, matching results are highlighted, while non-matching fields are shown faded (light gray).
+- The filter and key search only affect the results when you click the "Show Result" button, which opens the modal and displays the filtered comparison there
 
 
 ---
@@ -100,7 +108,7 @@ The filtering logic dynamically adjusts the displayed results based on user sele
 
 2. **JsonComparator.fs**:
    - Implements recursive comparison logic for JSON files.
-   - Defines types like `ComparisonResult` and `UnionDictionary`.
+   - Defines type like `ComparisonResult`.
 
 3. **Client.fs**:
    - Manages client-side functionality, including file input handling and dynamic UI updates.
