@@ -6,8 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Home</title>
     
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
     
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+
+    
+      
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&amp;display=swap" rel="stylesheet" />
     
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
@@ -17,29 +24,23 @@
 
 <body>
 
-<nav class="navbar navbar-default navbar-static-top">
-    <div class="container">
-        <div class="navbar-header">
+<nav class="navbar navbar-expand-lg navbar-light bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#"><i class="fas fa-toolbox"></i> JsonToolboxWebApp</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbar">
             
-            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
+            <ul class="nav navbar-nav me-auto mb-2 mb-lg-0"><li class="active"><a href="./index.html">Home</a></li><li><a href="./about.html">About</a></li></ul>
             
-            <a class="navbar-brand" href="#"><i class="fas fa-toolbox"></i> JsonToolboxWebApp</a>
-        </div>
-
-        
-        <div id="navbar" class="navbar-collapse collapse">
-            <ul class="nav navbar-nav"><li class="active"><a href="./index.html">Home</a></li><li><a href="./about.html">About</a></li></ul>
             <ul class="nav navbar-nav navbar-right">
-                <li><a href="https://websharper.com">websharper.com</a></li>
+                <li><a href="https://websharper.com" class="nav-link">websharper.com</a></li>
             </ul>
         </div>
     </div>
 </nav>
+
 
 
 <div class="container">
@@ -87,20 +88,16 @@ wsbundle.Main().ReplaceInDom(e1);
 });
 </script>
 
-
-
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-
 <div style="display:none" ws-children-template="MainForm"><div>
-
+            <hr />
             <div class="input-row">
-                <div>
-                    <label for="fileInput" class="custom-file-label">Tallózás...</label>
-                    <input type="file" id="fileInput" accept=".json" />
+                <div class="custom-file">
+                    <input type="file" id="fileInput" accept=".json" class="btn btn-secondary " />
+                    
                 </div>
-                <div>
-                    <label for="jsonTarget">Select Target:</label>
+                
+                <div class="col-md-6">
+                  
                     <select id="jsonTarget" a="">
                         <option value="json1">JSON 1</option>
                         <option value="json2">JSON 2</option>
@@ -108,17 +105,34 @@ wsbundle.Main().ReplaceInDom(e1);
                 </div>
             </div>
 
-            
-
             <hr />
+            
+         
+            <button id="showJson1Modal" class="btn btn-primary">JSON Content 1:</button>
+            <pre class="response-jumbotron" id="jsonOutput1"></pre>
 
             
-            <h4>JSON Content 1:</h4>
-            <pre id="jsonOutput1"></pre>
-
-            <h4>JSON Content 2:</h4>
-            <pre id="jsonOutput2"></pre>
-
+            <button id="showJson2Modal" class="btn btn-primary">JSON Content 2:</button>
+            <pre class="response-jumbotron" id="jsonOutput2"></pre>
+            
+            <div class="modal fade" id="jsonModal" tabindex="-1" role="dialog" aria-labelledby="jsonModalLabel" aria-hidden="true">
+                <div class="modal-dialog-scrollable modal-fullscreen" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="jsonModalLabel">JSON Content</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="closeModal1">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body" id="modalBody">
+                            <pre id="formattedJson"></pre>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal" id="closeModal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
             
             <h4 class="text-muted">response:</h4>
             <div class="jumbotron" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-height: 2em; border: 1px solid #ccc; padding: 5px;">
@@ -127,7 +141,11 @@ wsbundle.Main().ReplaceInDom(e1);
 
             
             <div>
-                <h3>Filter Comparison Results</h3>
+                <div class="input-row">
+                    <h3>Filter Comparison </h3>
+                    <button id="comparisonResultBt" class="btn btn-primary">Show Result</button>
+                    <button id="MergeJsons" class="btn btn-primary">Merge JSONs</button>
+                </div>
                 <label for="filterSame">Show results where:</label>
                 <select id="filterSame" class="form-control">
                     <option value="all">All</option>
@@ -138,13 +156,12 @@ wsbundle.Main().ReplaceInDom(e1);
 
             
             <div class="results-container">
-                <h3>Result:</h3>
+             
                 <label for="keySearchInput">Search by Key</label>
                 <input type="text" id="keySearchInput" class="form-control" placeholder="Enter key to search" />
             </div>
-
-            <pre id="comparisonResult"></pre>
-
+            
+            
         </div></div></body>
 
 </html>
