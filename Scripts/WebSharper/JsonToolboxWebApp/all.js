@@ -1082,7 +1082,9 @@ function htmlEncode(s){
 function shouldDisplayElement(json1, json2, filterKey, filterSame, same){
   const key1=getKey(json1);
   const key2=getKey(json2);
-  const keyFilterPassed=(console.log("filterKey: "+String(filterKey)),console.log("key1: "+String(String(key1.$0))),console.log("key2: "+String(String(key2.$0))),!isNullOrWhiteSpace(filterKey)&&!isNullOrWhiteSpace(key1.$0)&&!isNullOrWhiteSpace(key2.$0)?key1!=null&&key1.$0.indexOf(filterKey)!=-1||getPrimitiveValueString(json1).indexOf(filterKey)!=-1||key2!=null&&key2.$0.indexOf(filterKey)!=-1||getPrimitiveValueString(json2).indexOf(filterKey)!=-1:true);
+  const value1=getPrimitiveValueString(json1);
+  const value2=getPrimitiveValueString(json2);
+  const keyFilterPassed=(console.log("filterKey: "+String(filterKey)),console.log("key1: "+String(String(key1.$0))),console.log("key2: "+String(String(key2.$0))),console.log("value1: "+String(String(value1))),console.log("value2: "+String(String(value2))),!isNullOrWhiteSpace(filterKey)?key1!=null&&key1.$0.indexOf(filterKey)!=-1||value1.indexOf(filterKey)!=-1||key2!=null&&key2.$0.indexOf(filterKey)!=-1||value2.indexOf(filterKey)!=-1:true);
   console.log("keyFilterPassed: "+String(keyFilterPassed)+"  ");
   const sameFilterPassed=filterSame=="true"?same:filterSame=="false"?!same:true;
   console.log("sameFilterPassed: "+String(sameFilterPassed)+"  ");
