@@ -117,7 +117,9 @@ module ComparisonResultPrinter =
             Console.Log($"filterKey: {filterKey}")
             Console.Log($"key1: {key1.Value.ToString()}")
             Console.Log($"key2: {key2.Value.ToString()}")
-            if not (isNullOrWhiteSpace filterKey) && not (isNullOrWhiteSpace key1.Value) && not (isNullOrWhiteSpace key2.Value)then
+            Console.Log($"value1: {value1.ToString()}")
+            Console.Log($"value2: {value2.ToString()}")
+            if not (isNullOrWhiteSpace filterKey) then
                 (key1.IsSome && key1.Value.Contains(filterKey)) || value1.Contains(filterKey) ||
                 (key2.IsSome && key2.Value.Contains(filterKey)) || value2.Contains(filterKey)
             else true
