@@ -17,7 +17,7 @@ module ComparisonResultPrinter =
             Console.Log($"{indentStr}Object - Key: {key}")
         | Array(key, _) ->
             Console.Log($"{indentStr}Array - Key: {key}")
-        | Null(key) ->
+        | Null(key,_) ->
             Console.Log($"{indentStr}Null - Key: {key}")
 
 
@@ -98,7 +98,7 @@ module ComparisonResultPrinter =
         | Array(key, _) ->
             div.InnerHTML <- sprintf "<b>Array</b> - Key: %s" (htmlEncode key)
 
-        | Null(key) ->
+        | Null(key,_) ->
             div.InnerHTML <- sprintf "<b>Null</b> - Key: %s" (htmlEncode key)
 
         div
@@ -191,11 +191,16 @@ module ComparisonResultPrinter =
             | PrimitiveComparison pc ->
                 let show = shouldDisplayElement result.json1Value result.json2Value filterKeyString filterSame pc.same
                 if not show then
-                    // Halvány szín, például szürke
-                    container.SetAttribute("style", "color: lightgray;")
+                    if pc.same then
+                        container.SetAttribute("style", "color: lightgreen;")
+                    else
+                        container.SetAttribute("style", "color: lightcoral;")
                 else
-                    // Erősebb szín, például sötétzöld
-                    container.SetAttribute("style", "color: darkgreen;")
+                    if pc.same then
+                        container.SetAttribute("style", "color: darkgreen;")
+                    else
+                        container.SetAttribute("style", "color: darkred;")
+                        
                 label.InnerHTML <- "<b>PrimitiveComparison</b>"
                 let sameField = doc.CreateElement("span")
                 sameField.TextContent <- pc.same.ToString()
@@ -207,10 +212,15 @@ module ComparisonResultPrinter =
                 let show = shouldDisplayElement result.json1Value result.json2Value filterKeyString filterSame oc.same
                 if not show then
                     // Halvány szín, például szürke
-                    container.SetAttribute("style", "color: lightgray;")
+                    if oc.same then
+                        container.SetAttribute("style", "color: lightgreen;")
+                    else
+                        container.SetAttribute("style", "color: lightcoral;")
                 else
-                    // Erősebb szín, például sötétzöld
-                    container.SetAttribute("style", "color: darkgreen;")
+                    if oc.same then
+                        container.SetAttribute("style", "color: darkgreen;")
+                    else
+                        container.SetAttribute("style", "color: darkred;")
                     
                 label.InnerHTML <- "<b>ObjectComparison</b>"
                 let sameField = doc.CreateElement("span")
@@ -233,11 +243,16 @@ module ComparisonResultPrinter =
             | ArrayComparison ac ->
                 let show = shouldDisplayElement result.json1Value result.json2Value filterKeyString filterSame ac.same
                 if not show then
-                    // Halvány szín, például szürke
-                    container.SetAttribute("style", "color: lightgray;")
+                    if ac.same then
+                        container.SetAttribute("style", "color: lightgreen;")
+                    else
+                        container.SetAttribute("style", "color: lightcoral;")
                 else
-                    // Erősebb szín, például sötétzöld
-                    container.SetAttribute("style", "color: darkgreen;")
+                    if ac.same then
+                        container.SetAttribute("style", "color: darkgreen;")
+                    else
+                        container.SetAttribute("style", "color: darkred;")
+                        
                 label.InnerHTML <- "<b>ArrayComparison</b>"
                 let sameField = doc.CreateElement("span")
                 sameField.TextContent <- ac.actualSame.ToString()
@@ -251,7 +266,7 @@ module ComparisonResultPrinter =
                         let arrayItem = doc.CreateElement("div")
                         arrayItem.ClassName <- "cmp-array-item"
                         arrayItem.SetAttribute("style", sprintf "margin-left: %dpx;" ((indent + 1) * 20))
-                        arrayItem.InnerHTML <- sprintf "<span class=\"cmp-index\">%d</span>" i
+                        arrayItem.InnerHTML <- sprintf "<span class=\"cmp-index\">[%d]</span>" i
                         arrayItem.AppendChild(itemDiv) |> ignore
                         childContainer.AppendChild(arrayItem) |> ignore
                 )
@@ -260,11 +275,16 @@ module ComparisonResultPrinter =
                 
                 let show = shouldDisplayElement result.json1Value result.json2Value filterKeyString filterSame tmc.same
                 if not show then
-                    // Halvány szín, például szürke
-                    container.SetAttribute("style", "color: lightgray;")
+                    if tmc.same then
+                        container.SetAttribute("style", "color: lightgreen;")
+                    else
+                        container.SetAttribute("style", "color: lightcoral;")
+                        
                 else
-                    // Erősebb szín, például sötétzöld
-                    container.SetAttribute("style", "color: darkgreen;")
+                    if tmc.same then
+                        container.SetAttribute("style", "color: darkgreen;")
+                    else
+                        container.SetAttribute("style", "color: darkred;")
                 
                 
                 label.InnerHTML <- "<b>TypeMismatchComparison</b>"
