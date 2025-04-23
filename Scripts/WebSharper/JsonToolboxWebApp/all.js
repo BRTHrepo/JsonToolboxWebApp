@@ -924,8 +924,8 @@ function formatSingleComparisonResultForModal(modalBody, result, filterSame, fil
       };
       if(result_1.$==0){
         const oc=result_1.$0;
-        if(!shouldDisplayElement(result_1.json1Value, result_1.json2Value, filterKeyString, filterSame, oc.same))container.setAttribute("style", "color: lightgray;");
-        else container.setAttribute("style", "color: darkgreen;");
+        if(!shouldDisplayElement(result_1.json1Value, result_1.json2Value, filterKeyString, filterSame, oc.same))oc.same?container.setAttribute("style", "color: lightgreen;"):container.setAttribute("style", "color: lightcoral;");
+        else oc.same?container.setAttribute("style", "color: darkgreen;"):container.setAttribute("style", "color: darkred;");
         label.innerHTML="<b>ObjectComparison</b>";
         const sameField=doc.createElement("span");
         sameField.textContent=(c=oc.actualSame,String(c));
@@ -955,8 +955,8 @@ function formatSingleComparisonResultForModal(modalBody, result, filterSame, fil
       }
       else if(result_1.$==1){
         const ac=result_1.$0;
-        if(!shouldDisplayElement(result_1.json1Value, result_1.json2Value, filterKeyString, filterSame, ac.same))container.setAttribute("style", "color: lightgray;");
-        else container.setAttribute("style", "color: darkgreen;");
+        if(!shouldDisplayElement(result_1.json1Value, result_1.json2Value, filterKeyString, filterSame, ac.same))ac.same?container.setAttribute("style", "color: lightgreen;"):container.setAttribute("style", "color: lightcoral;");
+        else ac.same?container.setAttribute("style", "color: darkgreen;"):container.setAttribute("style", "color: darkred;");
         label.innerHTML="<b>ArrayComparison</b>";
         const sameField_1=doc.createElement("span");
         sameField_1.textContent=(c_1=ac.actualSame,String(c_1));
@@ -969,7 +969,7 @@ function formatSingleComparisonResultForModal(modalBody, result, filterSame, fil
             const arrayItem=doc.createElement("div");
             arrayItem.className="cmp-array-item";
             arrayItem.setAttribute("style", "margin-left: "+String((indent+1)*20)+"px;");
-            arrayItem.innerHTML="<span class=\"cmp-index\">"+String(i)+"</span>";
+            arrayItem.innerHTML="<span class=\"cmp-index\">["+String(i)+"]</span>";
             arrayItem.appendChild(itemDiv);
             childContainer.appendChild(arrayItem);
           }
@@ -978,8 +978,8 @@ function formatSingleComparisonResultForModal(modalBody, result, filterSame, fil
       else if(result_1.$==3){
         const tmc=result_1.$0;
         const show=shouldDisplayElement(result_1.json1Value, result_1.json2Value, filterKeyString, filterSame, tmc.same);
-        if(!show)container.setAttribute("style", "color: lightgray;");
-        else container.setAttribute("style", "color: darkgreen;");
+        if(!show)tmc.same?container.setAttribute("style", "color: lightgreen;"):container.setAttribute("style", "color: lightcoral;");
+        else tmc.same?container.setAttribute("style", "color: darkgreen;"):container.setAttribute("style", "color: darkred;");
         label.innerHTML="<b>TypeMismatchComparison</b>";
         const sameField_2=doc.createElement("span");
         sameField_2.textContent=String(tmc.same);
@@ -1038,8 +1038,8 @@ function formatSingleComparisonResultForModal(modalBody, result, filterSame, fil
       }
       else {
         const pc=result_1.$0;
-        if(!shouldDisplayElement(result_1.json1Value, result_1.json2Value, filterKeyString, filterSame, pc.same))container.setAttribute("style", "color: lightgray;");
-        else container.setAttribute("style", "color: darkgreen;");
+        if(!shouldDisplayElement(result_1.json1Value, result_1.json2Value, filterKeyString, filterSame, pc.same))pc.same?container.setAttribute("style", "color: lightgreen;"):container.setAttribute("style", "color: lightcoral;");
+        else pc.same?container.setAttribute("style", "color: darkgreen;"):container.setAttribute("style", "color: darkred;");
         label.innerHTML="<b>PrimitiveComparison</b>";
         const sameField_3=doc.createElement("span");
         sameField_3.textContent=String(pc.same);
@@ -2705,7 +2705,7 @@ class ObjectComparisonResult {
   children;
   get actualSame(){
     let allChildrenSame;
-    console.log(SFormat("Comparing objects: {0} = {1}", [this.json1Value, this.json2Value]));
+    console.log(SFormat("Comparing objects: ? {0} = {1}", [this.json1Value, this.json2Value]));
     if(!this.same)return false;
     else {
       allChildrenSame=true;
@@ -2743,14 +2743,14 @@ class ComparisonResult {
   static PrimitiveComparison(Item){
     return Create_1(ComparisonResult, {$:2, $0:Item});
   }
-  static TypeMismatchComparison(Item){
-    return Create_1(ComparisonResult, {$:3, $0:Item});
-  }
   static ObjectComparison(Item){
     return Create_1(ComparisonResult, {$:0, $0:Item});
   }
   static ArrayComparison(Item){
     return Create_1(ComparisonResult, {$:1, $0:Item});
+  }
+  static TypeMismatchComparison(Item){
+    return Create_1(ComparisonResult, {$:3, $0:Item});
   }
 }
 class ArrayComparisonResult {
@@ -2761,7 +2761,7 @@ class ArrayComparisonResult {
   items;
   get actualSame(){
     let allItemsSame;
-    console.log(SFormat("Comparing arrays: {0} = {1}", [this.json1Value, this.json2Value]));
+    console.log(SFormat("Comparing arrays: ? {0} = {1}", [this.json1Value, this.json2Value]));
     if(!this.same)return false;
     else {
       allItemsSame=true;
@@ -2871,7 +2871,7 @@ function protect(s){
 }
 function compareJsonTrees(json1, json2){
   let _1;
-  switch(json1.$==3?json2.$==2?(_1=[json2.$1, json1.$0, json2.$0],3):json2.$==1?(_1=[json2.$1, json1.$0, json2.$0],5):json2.$==3?(_1=[json1.$0, json2.$0],15):(_1=[json1.$0, json2.$0, json2.$1],2):json1.$==2?json2.$==2?json1.$0==json2.$0?(_1=[json1.$1, json2.$1, json1.$0, json2.$0],8):16:json2.$==1?(_1=[json2.$1, json1.$1, json1.$0, json2.$0],10):json2.$==0?(_1=[json1.$1, json1.$0, json2.$0, json2.$1],14):(_1=[json1.$1, json1.$0, json2.$0],4):json1.$==1?json2.$==1?json1.$0==json2.$0?(_1=[json1.$1, json2.$1, json1.$0, json2.$0],7):16:json2.$==2?(_1=[json1.$1, json2.$1, json1.$0, json2.$0],9):json2.$==0?(_1=[json1.$1, json1.$0, json2.$0, json2.$1],12):(_1=[json1.$1, json1.$0, json2.$0],6):json2.$==3?(_1=[json1.$0, json2.$0, json1.$1],1):json2.$==1?(_1=[json2.$1, json1.$0, json2.$0, json1.$1],11):json2.$==2?(_1=[json2.$1, json1.$0, json2.$0, json1.$1],13):json1.$0==json2.$0?(_1=[json1.$0, json2.$0, json1.$1, json2.$1],0):16){
+  switch(json1.$==3?json2.$==1?json1.$0==json2.$0?(_1=[json1.$1, json2.$1, json1.$0, json2.$0],3):16:json2.$==2?json1.$0==json2.$0?(_1=[json1.$1, json2.$1, json1.$0, json2.$0],6):16:json2.$==3?(_1=[json1.$0, json2.$0],15):json1.$0==json2.$0?(_1=[json1.$1, json1.$0, json2.$0, json2.$1],2):16:json1.$==1?json2.$==1?json1.$0==json2.$0?(_1=[json1.$1, json2.$1, json1.$0, json2.$0],5):16:json2.$==2?json1.$0==json2.$0?(_1=[json1.$1, json2.$1, json1.$0, json2.$0],9):16:json2.$==0?json1.$0==json2.$0?(_1=[json1.$1, json1.$0, json2.$0, json2.$1],12):16:json1.$0==json2.$0?(_1=[json1.$1, json2.$1, json1.$0, json2.$0],4):16:json1.$==2?json2.$==2?json1.$0==json2.$0?(_1=[json1.$1, json2.$1, json1.$0, json2.$0],8):16:json2.$==1?json1.$0==json2.$0?(_1=[json1.$1, json2.$1, json1.$0, json2.$0],10):16:json2.$==0?(_1=[json1.$1, json1.$0, json2.$0, json2.$1],14):json1.$0==json2.$0?(_1=[json1.$1, json2.$1, json1.$0, json2.$0],7):16:json2.$==3?json1.$0==json2.$0?(_1=[json2.$1, json1.$0, json2.$0, json1.$1],1):16:json2.$==1?json1.$0==json2.$0?(_1=[json2.$1, json1.$0, json2.$0, json1.$1],11):16:json2.$==2?(_1=[json2.$1, json1.$0, json2.$0, json1.$1],13):json1.$0==json2.$0?(_1=[json1.$0, json2.$0, json1.$1, json2.$1],0):16){
     case 0:
       const k1=_1[0];
       const k2=_1[1];
@@ -2879,110 +2879,194 @@ function compareJsonTrees(json1, json2){
       const v2=_1[3];
       console.log(SFormat("Comparing primitives: {0} = {1}", [k1, k2]));
       const same=Equals(v1, v2);
-      return ComparisonResult.PrimitiveComparison(New_3(same, Primitive(k1, v1), Primitive(k2, v2), same?Primitive(k1, v1):Null(k1)));
+      return ComparisonResult.PrimitiveComparison(New_3(same, Primitive(k1, v1), Primitive(k2, v2), same?Primitive(k1, v1):Null(k1, emptyJsonList())));
     case 1:
-      const k=_1[0];
-      const k2_1=_1[1];
-      const v=_1[2];
+      const k=_1[1];
+      const k2_1=_1[2];
+      const v=_1[3];
       console.log(SFormat("Comparing nulls: {0} = {1}", [k, k2_1]));
-      return ComparisonResult.PrimitiveComparison(New_3(false, Primitive(k, v), Null(k2_1), Primitive(k, v)));
+      return ComparisonResult.PrimitiveComparison(New_3(false, Primitive(k, v), Null(k2_1, emptyJsonList()), Primitive(k, v)));
     case 2:
-      const k_1=_1[0];
-      const k2_2=_1[1];
-      const v_1=_1[2];
+      const k_1=_1[1];
+      const k2_2=_1[2];
+      const v_1=_1[3];
       console.log(SFormat("Comparing nulls: {0} = {1}", [k_1, k2_2]));
-      return ComparisonResult.PrimitiveComparison(New_3(false, Null(k_1), Primitive(k2_2, v_1), Primitive(k2_2, v_1)));
+      return ComparisonResult.PrimitiveComparison(New_3(false, Null(k_1, emptyJsonList()), Primitive(k2_2, v_1), Primitive(k2_2, v_1)));
     case 3:
-      return ComparisonResult.TypeMismatchComparison(New_2(false, json1, json2, Null("typeMismatch"), null, Some(compareJsonTrees(json2, json2))));
-    case 4:
-      return ComparisonResult.TypeMismatchComparison(New_2(false, json1, json2, Null("typeMismatch"), Some(compareJsonTrees(json1, json1)), null));
-    case 5:
-      return ComparisonResult.TypeMismatchComparison(New_2(false, json1, json2, Null("typeMismatch"), null, Some(compareJsonTrees(json2, json2))));
-    case 6:
-      return ComparisonResult.TypeMismatchComparison(New_2(false, json1, json2, Null("typeMismatch"), Some(compareJsonTrees(json1, json1)), null));
-    case 7:
       const fields1=_1[0];
       const fields2=_1[1];
-      const k1_1=_1[2];
       const k2_3=_1[3];
-      console.log(SFormat("Comparing objects: {0} = {1}", [k1_1, k2_3]));
+      console.log(SFormat("Comparing objects: n-o {0} = {1}", [_1[2], k2_3]));
       const allKeys1=distinct_1(choose_2(getKey, fields1));
       const allKeys2=distinct_1(choose_2(getKey, fields2));
       const x=append_1(allKeys1, allKeys2);
       const children=fold((_2, _3) => {
         let _4;
-        const _5=tryFind((a_1) => a_1.$==1?a_1.$0==_3:a_1.$==2?a_1.$0==_3:a_1.$==3?a_1.$0==_3:a_1.$0==_3, fields1);
-        const _6=tryFind((a_1) => a_1.$==1?a_1.$0==_3:a_1.$==2?a_1.$0==_3:a_1.$==3?a_1.$0==_3:a_1.$0==_3, fields2);
+        const _5=tryFind((a_3) => a_3.$==1?a_3.$0==_3:a_3.$==2?a_3.$0==_3:a_3.$==3?a_3.$0==_3:a_3.$0==_3, fields1);
+        const _6=tryFind((a_3) => a_3.$==1?a_3.$0==_3:a_3.$==2?a_3.$0==_3:a_3.$==3?a_3.$0==_3:a_3.$0==_3, fields2);
         if(_5==null){
           if(_6==null)_4=FailWith("Unexpected empty key");
           else {
             const v2_1=_6.$0;
-            _4=ComparisonResult.PrimitiveComparison(New_3(false, Null(_3), v2_1, v2_1));
+            _4=v2_1.$==1?compareJsonTrees(Null(_3, emptyJsonList()), v2_1):v2_1.$==2?compareJsonTrees(Null(_3, emptyJsonList()), v2_1):ComparisonResult.PrimitiveComparison(New_3(false, Null(_3, emptyJsonList()), v2_1, Null(_3, emptyJsonList())));
           }
         }
         else if(_6==null){
           const v1_1=_5.$0;
-          _4=v1_1.$==1?compareJsonTrees(v1_1, Null(_3)):v1_1.$==2?compareJsonTrees(v1_1, Null(_3)):ComparisonResult.PrimitiveComparison(New_3(false, v1_1, Null(_3), v1_1));
+          _4=v1_1.$==1?compareJsonTrees(v1_1, Null(_3, emptyJsonList())):v1_1.$==2?compareJsonTrees(v1_1, Null(_3, emptyJsonList())):ComparisonResult.PrimitiveComparison(New_3(false, v1_1, Null(_3, emptyJsonList()), Null(_3, emptyJsonList())));
         }
         else _4=compareJsonTrees(_5.$0, _6.$0);
         return _2.Add_1(_3, _4);
       }, new FSharpMap("New", []), x);
-      return ComparisonResult.ObjectComparison(ObjectComparisonResult.New(Equals(allKeys1, allKeys2), Object_2(k1_1, fields1), Object_2(k2_3, fields2), Object_2(k1_1, fields1), children));
-    case 8:
-      const items1=_1[0];
-      const items2=_1[1];
+      return ComparisonResult.ObjectComparison(ObjectComparisonResult.New(Equals(allKeys1, allKeys2), Null(k2_3, fields1), Object_2(k2_3, fields2), Null("", emptyJsonList()), children));
+    case 4:
+      const fields1_1=_1[0];
+      const fields2_1=_1[1];
+      const k1_1=_1[2];
+      console.log(SFormat("Comparing objects: o-n {0} = {1}", [k1_1, _1[3]]));
+      const allKeys1_1=distinct_1(choose_2(getKey, fields1_1));
+      const allKeys2_1=distinct_1(choose_2(getKey, fields2_1));
+      const x_1=append_1(allKeys1_1, allKeys2_1);
+      const children_1=fold((_2, _3) => {
+        let _4;
+        const _5=tryFind((a_3) => a_3.$==1?a_3.$0==_3:a_3.$==2?a_3.$0==_3:a_3.$==3?a_3.$0==_3:a_3.$0==_3, fields1_1);
+        const _6=tryFind((a_3) => a_3.$==1?a_3.$0==_3:a_3.$==2?a_3.$0==_3:a_3.$==3?a_3.$0==_3:a_3.$0==_3, fields2_1);
+        if(_5==null){
+          if(_6==null)_4=FailWith("Unexpected empty key");
+          else {
+            const v2_1=_6.$0;
+            _4=v2_1.$==1?compareJsonTrees(Null(_3, emptyJsonList()), v2_1):v2_1.$==2?compareJsonTrees(Null(_3, emptyJsonList()), v2_1):ComparisonResult.PrimitiveComparison(New_3(false, Null(_3, emptyJsonList()), v2_1, Null(_3, emptyJsonList())));
+          }
+        }
+        else if(_6==null){
+          const v1_1=_5.$0;
+          _4=v1_1.$==1?compareJsonTrees(v1_1, Null(_3, emptyJsonList())):v1_1.$==2?compareJsonTrees(v1_1, Null(_3, emptyJsonList())):ComparisonResult.PrimitiveComparison(New_3(false, v1_1, Null(_3, emptyJsonList()), Null(_3, emptyJsonList())));
+        }
+        else _4=compareJsonTrees(_5.$0, _6.$0);
+        return _2.Add_1(_3, _4);
+      }, new FSharpMap("New", []), x_1);
+      return ComparisonResult.ObjectComparison(ObjectComparisonResult.New(Equals(allKeys1_1, allKeys2_1), Object_2(k1_1, fields1_1), Null(k1_1, fields2_1), Null("", emptyJsonList()), children_1));
+    case 5:
+      const fields1_2=_1[0];
+      const fields2_2=_1[1];
       const k1_2=_1[2];
       const k2_4=_1[3];
-      console.log(SFormat("Comparing arrays: {0} = {1}", [k1_2, k2_4]));
+      console.log(SFormat("Comparing objects: o-o {0} = {1}", [k1_2, k2_4]));
+      const allKeys1_2=distinct_1(choose_2(getKey, fields1_2));
+      const allKeys2_2=distinct_1(choose_2(getKey, fields2_2));
+      const x_2=append_1(allKeys1_2, allKeys2_2);
+      const children_2=fold((_2, _3) => {
+        let _4;
+        const _5=tryFind((a_3) => a_3.$==1?a_3.$0==_3:a_3.$==2?a_3.$0==_3:a_3.$==3?a_3.$0==_3:a_3.$0==_3, fields1_2);
+        const _6=tryFind((a_3) => a_3.$==1?a_3.$0==_3:a_3.$==2?a_3.$0==_3:a_3.$==3?a_3.$0==_3:a_3.$0==_3, fields2_2);
+        if(_5==null){
+          if(_6==null)_4=FailWith("Unexpected empty key");
+          else {
+            const v2_1=_6.$0;
+            _4=v2_1.$==1?compareJsonTrees(Null(_3, emptyJsonList()), v2_1):v2_1.$==2?compareJsonTrees(Null(_3, emptyJsonList()), v2_1):ComparisonResult.PrimitiveComparison(New_3(false, Null(_3, emptyJsonList()), v2_1, Null(_3, emptyJsonList())));
+          }
+        }
+        else if(_6==null){
+          const v1_1=_5.$0;
+          _4=v1_1.$==1?compareJsonTrees(v1_1, Null(_3, emptyJsonList())):v1_1.$==2?compareJsonTrees(v1_1, Null(_3, emptyJsonList())):ComparisonResult.PrimitiveComparison(New_3(false, v1_1, Null(_3, emptyJsonList()), Null(_3, emptyJsonList())));
+        }
+        else _4=compareJsonTrees(_5.$0, _6.$0);
+        return _2.Add_1(_3, _4);
+      }, new FSharpMap("New", []), x_2);
+      return ComparisonResult.ObjectComparison(ObjectComparisonResult.New(Equals(allKeys1_2, allKeys2_2), Object_2(k1_2, fields1_2), Object_2(k2_4, fields2_2), Null("", emptyJsonList()), children_2));
+    case 6:
+      const items1=_1[0];
+      const items2=_1[1];
+      const k2_5=_1[3];
+      console.log(SFormat("Comparing arrays: {0} = {1}", [_1[2], k2_5]));
       const lengthMatch=length_1(items1)===length_1(items2);
       const a=length_1(items1);
       const b=length_1(items2);
       const maxLength=Compare(a, b)===1?a:b;
-      return ComparisonResult.ArrayComparison(ArrayComparisonResult.New(lengthMatch, Array_1(k1_2, items1), Array_1(k2_4, items2), Array_1(k1_2, items1), ofList(map2(compareJsonTrees, ofSeq_1(delay(() => map((i) => i<length_1(items1)?items1.get_Item(i):Null("padded"), range(0, maxLength-1)))), ofSeq_1(delay(() => map((i) => i<length_1(items2)?items2.get_Item(i):Null("padded"), range(0, maxLength-1))))))));
+      const emptyJsonList_2=FSharpList.Empty;
+      return ComparisonResult.ArrayComparison(ArrayComparisonResult.New(lengthMatch, Null(k2_5, items1), Array_1(k2_5, items2), Null("", emptyJsonList_2), ofList(map2(compareJsonTrees, ofSeq_1(delay(() => map((i) => i<length_1(items1)?items1.get_Item(i):Null("", emptyJsonList_2), range(0, maxLength-1)))), ofSeq_1(delay(() => map((i) => i<length_1(items2)?items2.get_Item(i):Null("", emptyJsonList_2), range(0, maxLength-1))))))));
+    case 7:
+      const items1_1=_1[0];
+      const items2_1=_1[1];
+      const k1_3=_1[2];
+      console.log(SFormat("Comparing arrays: {0} = {1}", [k1_3, _1[3]]));
+      const lengthMatch_1=length_1(items1_1)===length_1(items2_1);
+      const a_1=length_1(items1_1);
+      const b_1=length_1(items2_1);
+      const maxLength_1=Compare(a_1, b_1)===1?a_1:b_1;
+      const emptyJsonList_3=FSharpList.Empty;
+      return ComparisonResult.ArrayComparison(ArrayComparisonResult.New(lengthMatch_1, Array_1(k1_3, items1_1), Null(k1_3, items2_1), Null("", emptyJsonList_3), ofList(map2(compareJsonTrees, ofSeq_1(delay(() => map((i) => i<length_1(items1_1)?items1_1.get_Item(i):Null("", emptyJsonList_3), range(0, maxLength_1-1)))), ofSeq_1(delay(() => map((i) => i<length_1(items2_1)?items2_1.get_Item(i):Null("", emptyJsonList_3), range(0, maxLength_1-1))))))));
+    case 8:
+      const items1_2=_1[0];
+      const items2_2=_1[1];
+      const k1_4=_1[2];
+      const k2_6=_1[3];
+      console.log(SFormat("Comparing arrays: {0} = {1}", [k1_4, k2_6]));
+      const lengthMatch_2=length_1(items1_2)===length_1(items2_2);
+      const a_2=length_1(items1_2);
+      const b_2=length_1(items2_2);
+      const maxLength_2=Compare(a_2, b_2)===1?a_2:b_2;
+      const emptyJsonList_4=FSharpList.Empty;
+      return ComparisonResult.ArrayComparison(ArrayComparisonResult.New(lengthMatch_2, Array_1(k1_4, items1_2), Array_1(k2_6, items2_2), Null("", emptyJsonList_4), ofList(map2(compareJsonTrees, ofSeq_1(delay(() => map((i) => i<length_1(items1_2)?items1_2.get_Item(i):Null("", emptyJsonList_4), range(0, maxLength_2-1)))), ofSeq_1(delay(() => map((i) => i<length_1(items2_2)?items2_2.get_Item(i):Null("", emptyJsonList_4), range(0, maxLength_2-1))))))));
     case 9:
-      console.log(SFormat("Comparing objects: {0} = {1}", [_1[2], _1[3]]));
-      return ComparisonResult.TypeMismatchComparison(New_2(false, json1, json2, Null("typeMismatch"), Some(compareJsonTrees(json1, json1)), Some(compareJsonTrees(json2, json2))));
+      const k1_5=_1[2];
+      console.log(SFormat("Comparing arrays: {0} = {1}", [k1_5, _1[3]]));
+      const jsonNull=Null(k1_5, emptyJsonList());
+      const children1=Some(compareJsonTrees(json1, jsonNull));
+      const children2=Some(compareJsonTrees(jsonNull, json2));
+      return ComparisonResult.TypeMismatchComparison(New_2(false, json1, json2, Null("", emptyJsonList()), children1, children2));
     case 10:
-      console.log(SFormat("Comparing arrays: {0} = {1}", [_1[2], _1[3]]));
-      return ComparisonResult.TypeMismatchComparison(New_2(false, json1, json2, Null("typeMismatch"), Some(compareJsonTrees(json1, json1)), Some(compareJsonTrees(json2, json2))));
+      const k1_6=_1[2];
+      console.log(SFormat("Comparing arrays: {0} = {1}", [k1_6, _1[3]]));
+      const jsonNull_1=Null(k1_6, emptyJsonList());
+      const children1_1=Some(compareJsonTrees(json1, jsonNull_1));
+      const children2_1=Some(compareJsonTrees(jsonNull_1, json2));
+      return ComparisonResult.TypeMismatchComparison(New_2(false, json1, json2, Null("", emptyJsonList()), children1_1, children2_1));
     case 11:
       console.log(SFormat("Comparing primitives: {0} = {1}", [_1[1], _1[2]]));
-      return ComparisonResult.TypeMismatchComparison(New_2(false, json1, json2, Null("typeMismatch"), null, Some(compareJsonTrees(json2, json2))));
+      const children2_2=Some(compareJsonTrees(json2, json2));
+      return ComparisonResult.TypeMismatchComparison(New_2(false, json1, json2, Null("", emptyJsonList()), null, children2_2));
     case 12:
       console.log(SFormat("Comparing primitives: {0} = {1}", [_1[1], _1[2]]));
-      return ComparisonResult.TypeMismatchComparison(New_2(false, json1, json2, Null("typeMismatch"), Some(compareJsonTrees(json1, json1)), null));
+      const children1_2=Some(compareJsonTrees(json1, json1));
+      return ComparisonResult.TypeMismatchComparison(New_2(false, json1, json2, Null("", emptyJsonList()), children1_2, null));
     case 13:
       console.log(SFormat("Comparing primitives: {0} = {1}", [_1[1], _1[2]]));
-      return ComparisonResult.TypeMismatchComparison(New_2(false, json1, json2, Null("typeMismatch"), null, Some(compareJsonTrees(json2, json2))));
+      const children2_3=Some(compareJsonTrees(json2, json2));
+      return ComparisonResult.TypeMismatchComparison(New_2(false, json1, json2, Null("", emptyJsonList()), null, children2_3));
     case 14:
       console.log(SFormat("Comparing arrays: {0} = {1}", [_1[1], _1[2]]));
-      return ComparisonResult.TypeMismatchComparison(New_2(false, json1, json2, Null("typeMismatch"), Some(compareJsonTrees(json1, json1)), null));
+      const children1_3=Some(compareJsonTrees(json1, json1));
+      return ComparisonResult.TypeMismatchComparison(New_2(false, json1, json2, Null("typeMismatch", emptyJsonList()), children1_3, null));
     case 15:
       console.log(SFormat("Comparing nulls: {0} = {1}", [_1[0], _1[1]]));
       return ComparisonResult.PrimitiveComparison(New_3(true, json1, json2, json1));
     case 16:
       console.log(SFormat("Comparing different types: {0} = {1}", [json1, json2]));
-      return ComparisonResult.TypeMismatchComparison(New_2(false, json1, json2, Null("typeMismatch"), null, null));
+      return ComparisonResult.TypeMismatchComparison(New_2(false, json1, json2, Null("typeMismatch", emptyJsonList()), null, null));
   }
+}
+function emptyJsonList(){
+  return _c_5.emptyJsonList;
 }
 function traverseJsonDocument(jsonString){
   const jsObj=JSON.parse(jsonString);
   function traverse(key){
     return(value) => {
-      if(value==null)return Null(key);
+      if(value==null)return Null(key, emptyJsonList_1());
       else {
         const m=typeof value;
         if(m=="string")return Primitive(key, value);
         else if(m=="number")return Number.isInteger(value)?Primitive(key, value):Primitive(key, value);
         else if(m=="boolean")return Primitive(key, value);
         else if(m=="object"){
-          if(Array.isArray(value))return Array_1(key, ofSeq_1(delay(() => map((i) =>(traverse("["+String(i)+"]"))(get(value, i)), range(0, length(value)-1)))));
+          if(Array.isArray(value))return Array_1(key, ofSeq_1(delay(() => map((i) =>(traverse(""))(get(value, i)), range(0, length(value)-1)))));
           else {
             const keys=Object.keys(value);
             return Object_2(key, ofSeq_1(delay(() => map((k) =>(traverse(k))(value[k]), keys))));
           }
         }
-        else return Null(key);
+        else return Null(key, emptyJsonList_1());
       }
     };
   }
@@ -2992,7 +3076,10 @@ function getKey(field){
   return field.$==1?Some(field.$0):field.$==2?Some(field.$0):field.$==3?Some(field.$0):Some(field.$0);
 }
 function getPrimitiveValueString(field){
-  return field.$==1?"":field.$==2?"":field.$==3?"":String(field.$1);
+  return field.$==1?"":field.$==2?"":field.$==3?"Null":String(field.$1);
+}
+function emptyJsonList_1(){
+  return _c_6.emptyJsonList;
 }
 function Get(x){
   return x instanceof Array?ArrayEnumerator(x):Equals(typeof x, "string")?StringEnumerator(x):x.GetEnumerator();
@@ -3085,10 +3172,10 @@ function Int(){
   return counter();
 }
 function set_counter(_1){
-  _c_5.counter=_1;
+  _c_7.counter=_1;
 }
 function counter(){
-  return _c_5.counter;
+  return _c_7.counter;
 }
 function Ready(Item1, Item2){
   return{
@@ -3141,14 +3228,18 @@ function Primitive(key, value){
     $1:value
   };
 }
-function Null(key){
-  return{$:3, $0:key};
+function Null(key, items){
+  return{
+    $:3, 
+    $0:key, 
+    $1:items
+  };
 }
-function Object_2(key, fields){
+function Object_2(key, items){
   return{
     $:1, 
     $0:key, 
-    $1:fields
+    $1:items
   };
 }
 function Array_1(key, items){
@@ -3315,10 +3406,10 @@ function head_1(l){
   return l.$==1?l.$0:listEmpty();
 }
 class FSharpList {
+  static Empty=Create_1(FSharpList, {$:0});
   get_Item(x){
     return nth(x, this);
   }
-  static Empty=Create_1(FSharpList, {$:0});
   static Cons(Head, Tail){
     return Create_1(FSharpList, {
       $:1, 
@@ -3463,6 +3554,24 @@ class Pair {
     return Create_1(Pair, {Key:Key, Value:Value_1});
   }
 }
+let _c_5=Lazy((_i) => class $StartupCode_JsonComparator {
+  static {
+    _c_5=_i(this);
+  }
+  static emptyJsonList;
+  static {
+    this.emptyJsonList=FSharpList.Empty;
+  }
+});
+let _c_6=Lazy((_i) => class $StartupCode_JsonTraverser {
+  static {
+    _c_6=_i(this);
+  }
+  static emptyJsonList;
+  static {
+    this.emptyJsonList=FSharpList.Empty;
+  }
+});
 function convertTextNode(n){
   let m=null;
   let li=0;
@@ -3656,19 +3765,19 @@ function ChildrenArray(element){
   return a;
 }
 function rhtml(){
-  return _c_7.rhtml;
+  return _c_9.rhtml;
 }
 function wrapMap(){
-  return _c_7.wrapMap;
+  return _c_9.wrapMap;
 }
 function defaultWrap(){
-  return _c_7.defaultWrap;
+  return _c_9.defaultWrap;
 }
 function rxhtmlTag(){
-  return _c_7.rxhtmlTag;
+  return _c_9.rxhtmlTag;
 }
 function rtagName(){
-  return _c_7.rtagName;
+  return _c_9.rtagName;
 }
 function IterSelector(el, selector, f){
   const l=el.querySelectorAll(selector);
@@ -3775,7 +3884,7 @@ function AppendTree(a, b){
   }
 }
 function EmptyAttr(){
-  return _c_9.EmptyAttr;
+  return _c_11.EmptyAttr;
 }
 function HasExitAnim(attr){
   const flag=2;
@@ -4308,7 +4417,7 @@ function get_Empty(){
   return Anim(Empty_1());
 }
 function BatchUpdatesEnabled(){
-  return _c_6.BatchUpdatesEnabled;
+  return _c_8.BatchUpdatesEnabled;
 }
 function StartProcessor(procAsync){
   const st=[0];
@@ -4334,9 +4443,9 @@ function concat_3(o){
   for(var k_1 in o)r.push.apply(r, o[k_1]);
   return r;
 }
-let _c_5=Lazy((_i) => class $StartupCode_Abbrev {
+let _c_7=Lazy((_i) => class $StartupCode_Abbrev {
   static {
-    _c_5=_i(this);
+    _c_7=_i(this);
   }
   static counter;
   static {
@@ -4502,7 +4611,7 @@ function Intersect(a, a_1){
   return NodeSet(Intersect_1(a.$0, a_1.$0));
 }
 function UseAnimations(){
-  return _c_8.UseAnimations;
+  return _c_10.UseAnimations;
 }
 function Actions(a){
   return ConcatActions(choose_1((a_1) => a_1.$==1?Some(a_1.$0):null, ToArray_1(a.$0)));
@@ -4542,18 +4651,18 @@ function Prolong(nextDuration, anim){
   const last=Create(() => anim.Compute(anim.Duration));
   return{Compute:(t) => t>=dur?last.f():comp(t), Duration:nextDuration};
 }
-let _c_6=Lazy((_i) => class Proxy {
+let _c_8=Lazy((_i) => class Proxy {
   static {
-    _c_6=_i(this);
+    _c_8=_i(this);
   }
   static BatchUpdatesEnabled;
   static {
     this.BatchUpdatesEnabled=true;
   }
 });
-let _c_7=Lazy((_i) => class $StartupCode_DomUtility {
+let _c_9=Lazy((_i) => class $StartupCode_DomUtility {
   static {
-    _c_7=_i(this);
+    _c_9=_i(this);
   }
   static defaultWrap;
   static wrapMap;
@@ -4604,9 +4713,9 @@ class DynamicAttrNode extends Object_1 {
     }, view);
   }
 }
-let _c_8=Lazy((_i) => class $StartupCode_Animation {
+let _c_10=Lazy((_i) => class $StartupCode_Animation {
   static {
-    _c_8=_i(this);
+    _c_10=_i(this);
   }
   static UseAnimations;
   static CubicInOut;
@@ -4650,11 +4759,11 @@ function Concat_1(xs){
   return TreeReduce(Empty_1(), Append_1, x);
 }
 function Empty_1(){
-  return _c_10.Empty;
+  return _c_12.Empty;
 }
-let _c_9=Lazy((_i) => class Client {
+let _c_11=Lazy((_i) => class Client {
   static {
-    _c_9=_i(this);
+    _c_11=_i(this);
   }
   static FloatApplyChecked;
   static FloatGetChecked;
@@ -4831,22 +4940,22 @@ function Intersect_1(a, b){
   return set_1;
 }
 function StringApply(){
-  return _c_9.StringApply;
+  return _c_11.StringApply;
 }
 function FloatApplyUnchecked(){
-  return _c_9.FloatApplyUnchecked;
+  return _c_11.FloatApplyUnchecked;
 }
 function BoolCheckedApply(){
-  return _c_9.BoolCheckedApply;
+  return _c_11.BoolCheckedApply;
 }
 function DateTimeApplyUnchecked(){
-  return _c_9.DateTimeApplyUnchecked;
+  return _c_11.DateTimeApplyUnchecked;
 }
 function FileApplyUnchecked(){
-  return _c_9.FileApplyUnchecked;
+  return _c_11.FileApplyUnchecked;
 }
 function StringListApply(){
-  return _c_9.StringListApply;
+  return _c_11.StringListApply;
 }
 function ApplyValue(get_1, set_1, var_1){
   let expectedValue;
@@ -4871,22 +4980,22 @@ function ApplyValue(get_1, set_1, var_1){
   }, var_1.View)];
 }
 function StringSet(){
-  return _c_9.StringSet;
+  return _c_11.StringSet;
 }
 function StringGet(){
-  return _c_9.StringGet;
+  return _c_11.StringGet;
 }
 function StringListSet(){
-  return _c_9.StringListSet;
+  return _c_11.StringListSet;
 }
 function StringListGet(){
-  return _c_9.StringListGet;
+  return _c_11.StringListGet;
 }
 function DateTimeSetUnchecked(){
-  return _c_9.DateTimeSetUnchecked;
+  return _c_11.DateTimeSetUnchecked;
 }
 function DateTimeGetUnchecked(){
-  return _c_9.DateTimeGetUnchecked;
+  return _c_11.DateTimeGetUnchecked;
 }
 function FileApplyValue(get_1, set_1, var_1){
   let expectedValue;
@@ -4908,34 +5017,34 @@ function FileApplyValue(get_1, set_1, var_1){
   }, var_1.View)];
 }
 function FileSetUnchecked(){
-  return _c_9.FileSetUnchecked;
+  return _c_11.FileSetUnchecked;
 }
 function FileGetUnchecked(){
-  return _c_9.FileGetUnchecked;
+  return _c_11.FileGetUnchecked;
 }
 function IntSetUnchecked(){
-  return _c_9.IntSetUnchecked;
+  return _c_11.IntSetUnchecked;
 }
 function IntGetUnchecked(){
-  return _c_9.IntGetUnchecked;
+  return _c_11.IntGetUnchecked;
 }
 function IntSetChecked(){
-  return _c_9.IntSetChecked;
+  return _c_11.IntSetChecked;
 }
 function IntGetChecked(){
-  return _c_9.IntGetChecked;
+  return _c_11.IntGetChecked;
 }
 function FloatSetUnchecked(){
-  return _c_9.FloatSetUnchecked;
+  return _c_11.FloatSetUnchecked;
 }
 function FloatGetUnchecked(){
-  return _c_9.FloatGetUnchecked;
+  return _c_11.FloatGetUnchecked;
 }
 function FloatSetChecked(){
-  return _c_9.FloatSetChecked;
+  return _c_11.FloatSetChecked;
 }
 function FloatGetChecked(){
-  return _c_9.FloatGetChecked;
+  return _c_11.FloatGetChecked;
 }
 function isBlank(s){
   return forall_2(IsWhiteSpace, s);
@@ -5049,9 +5158,9 @@ function forceLazy(){
 function cachedLazy(){
   return this.v;
 }
-let _c_10=Lazy((_i) => class $StartupCode_AppendList {
+let _c_12=Lazy((_i) => class $StartupCode_AppendList {
   static {
-    _c_10=_i(this);
+    _c_12=_i(this);
   }
   static Empty;
   static {
