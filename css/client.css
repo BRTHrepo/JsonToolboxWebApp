@@ -92,7 +92,7 @@ button:hover {
 
 /* --- JSON Output & Results --- */
 #comparisonResult {
-    max-height: 15em;  // Maximum height of 30em (30 lines)
+    max-height: 15em;  
     overflow-y: auto;  /* Visszafelé görgethető */
     border: 1px solid #ccc;
     padding: 10px;
